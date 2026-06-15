@@ -372,3 +372,74 @@ html, body {
   #app { padding: 0.75rem; }
   .logo { font-size: 22px; }
 }
+/* ── Agregar al final de panel.css ─────────────────────────────────────── */
+
+/* Sección controles */
+.controles-milonga {
+  padding: 0.75rem 1.5rem 0;
+}
+
+.controles-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Botones base */
+.btn-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.btn-control:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-control:not(:disabled):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.btn-control:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Iniciar — dorado como el acento del panel */
+.btn-play {
+  background: #c9a84c;
+  color: #1a1209;
+}
+
+/* Pausar */
+.btn-pause {
+  background: rgba(255,255,255,0.08);
+  color: #e8dcc8;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Stop */
+.btn-stop {
+  background: rgba(180, 60, 60, 0.15);
+  color: #e89090;
+  border: 1px solid rgba(180, 60, 60, 0.2);
+}
+
+/* Estado de carga inline */
+.carga-estado {
+  font-size: 0.8rem;
+  color: rgba(232, 220, 200, 0.55);
+  margin-left: 0.5rem;
+  font-style: italic;
+}

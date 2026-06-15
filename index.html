@@ -1,281 +1,271 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>MilongIA - Arquitectura</title>
+
 
 <style>
-body{
-    background:#0b0b14;
-    color:#ffffff;
-    font-family:Arial,sans-serif;
-    max-width:1200px;
-    margin:auto;
-    padding:30px;
-}
-
-h1{
-    color:#d6a14b;
-}
-
-h2{
-    color:#c96cff;
-}
-
-details{
-    background:#171726;
-    border:1px solid #c96cff;
-    border-radius:12px;
-    margin-bottom:15px;
-    padding:15px;
-}
-
-summary{
-    cursor:pointer;
-    font-size:20px;
-    color:#d6a14b;
-}
-
-.box{
-    background:#222238;
-    padding:12px;
-    border-radius:8px;
-    margin-top:10px;
-}
-
-.flow{
-    color:#7fe6ff;
-    font-weight:bold;
-}
+*{box-sizing:border-box;margin:0;padding:0;}
+.mg{background:#0A0A0A;border-radius:16px;padding:1.25rem;font-family:var(--font-sans);}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid #2A2A2A;}
+.logo{font-size:22px;font-weight:500;color:#F5F5F5;letter-spacing:-0.5px;}
+.logo span{color:#C9A84C;}
+.live-badge{display:flex;align-items:center;gap:6px;background:#1A0A0A;border:0.5px solid #8B1A1A;border-radius:20px;padding:5px 12px;font-size:12px;color:#E87070;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#E24B4A;}
+.evento-info{font-size:13px;color:#A0A0A0;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.met{background:#141414;border:0.5px solid #2A2A2A;border-radius:10px;padding:12px 14px;}
+.met-label{font-size:11px;color:#A0A0A0;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.met-val{font-size:22px;font-weight:500;color:#F5F5F5;}
+.met-sub{font-size:11px;color:#5A5A5A;margin-top:2px;}
+.met-gold .met-val{color:#C9A84C;}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.card{background:#141414;border:0.5px solid #2A2A2A;border-radius:12px;padding:1rem 1.1rem;}
+.card-title{font-size:11px;color:#5A5A5A;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;}
+.track-name{font-size:17px;font-weight:500;color:#F5F5F5;margin-bottom:3px;}
+.track-orq{font-size:13px;color:#A0A0A0;margin-bottom:10px;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.chip{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
+.ch-tango{background:#1A0A0A;color:#E87070;border:0.5px solid #8B1A1A;}
+.ch-vals{background:#0A1A12;color:#5DCAA5;border:0.5px solid #0F6E56;}
+.ch-milonga{background:#1A1200;color:#EF9F27;border:0.5px solid #854F0B;}
+.ch-cortina{background:#141414;color:#888780;border:0.5px solid #2A2A2A;}
+.ch-gold{background:#1A1400;color:#C9A84C;border:0.5px solid #633806;}
+.ch-green{background:#0A1A0A;color:#4CAF7D;border:0.5px solid #27500A;}
+.prog-wrap{margin:8px 0 4px;}
+.prog-bg{height:3px;background:#2A2A2A;border-radius:2px;}
+.prog-fill{height:3px;background:#C9A84C;border-radius:2px;width:38%;}
+.prog-times{display:flex;justify-content:space-between;font-size:11px;color:#5A5A5A;margin-top:4px;}
+.queue-list{display:flex;flex-direction:column;gap:6px;}
+.q-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#0A0A0A;border:0.5px solid #2A2A2A;border-radius:8px;}
+.q-num{font-size:11px;color:#5A5A5A;width:14px;}
+.q-arrow{color:#C9A84C;font-size:14px;}
+.q-info{flex:1;}
+.q-track{font-size:13px;color:#F5F5F5;}
+.q-orq{font-size:11px;color:#5A5A5A;}
+.pista-rows{display:flex;flex-direction:column;gap:10px;}
+.p-row{display:flex;align-items:center;gap:8px;}
+.p-label{font-size:12px;color:#A0A0A0;width:76px;}
+.p-bar{flex:1;height:6px;background:#2A2A2A;border-radius:3px;}
+.p-fill{height:6px;border-radius:3px;}
+.fill-g{background:#4CAF7D;}
+.fill-a{background:#C9A84C;}
+.fill-r{background:#E24B4A;}
+.p-val{font-size:12px;color:#A0A0A0;width:30px;text-align:right;}
+.ia-box{margin-top:12px;border-left:2px solid #C9A84C;border-radius:0 8px 8px 0;padding:8px 12px;background:#0F0E08;}
+.ia-label{font-size:10px;color:#C9A84C;letter-spacing:0.5px;margin-bottom:3px;}
+.ia-text{font-size:12px;color:#A0A0A0;line-height:1.5;}
+.pedidos{display:flex;flex-direction:column;gap:6px;}
+.ped-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0A0A0A;border:0.5px solid #2A2A2A;border-radius:8px;}
+.ped-av{width:28px;height:28px;border-radius:50%;background:#1A1400;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#C9A84C;border:0.5px solid #633806;}
+.ped-info{flex:1;}
+.ped-song{font-size:12px;color:#F5F5F5;}
+.ped-mesa{font-size:11px;color:#5A5A5A;}
+.ped-votes{font-size:11px;color:#C9A84C;font-weight:500;}
+.vol-rows{display:flex;flex-direction:column;gap:10px;}
+.v-row{display:flex;align-items:center;gap:8px;}
+.v-label{font-size:12px;color:#A0A0A0;width:72px;}
+.v-val{font-size:12px;color:#C9A84C;width:28px;text-align:right;font-weight:500;}
+.sep{height:0.5px;background:#2A2A2A;margin:8px 0;}
+.status-row{display:flex;align-items:center;justify-content:space-between;}
+.status-label{font-size:12px;color:#A0A0A0;}
+.status-on{font-size:12px;color:#4CAF7D;font-weight:500;}
+.status-auto{font-size:12px;color:#C9A84C;font-weight:500;}
+input[type=range]{accent-color:#C9A84C;width:100%;}
 </style>
 
-</head>
-<body>
+<div class="mg">
+  <h2 class="sr-only">Panel MilongIA — control automático en vivo</h2>
 
-<h1>MilongIA</h1>
+  <div class="topbar">
+    <div>
+      <div class="logo">Milong<span>IA</span></div>
+      <div class="evento-info" style="margin-top:3px;">Milonga San Telmo · Sábado 14 jun · 23:45</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      En vivo · IA activa
+    </div>
+  </div>
 
-<p>
-TDJ Inteligente para Milongas del Mundo.
-</p>
+  <div class="metrics">
+    <div class="met">
+      <div class="met-label"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Personas</div>
+      <div class="met-val">84</div>
+      <div class="met-sub">+12 última hora</div>
+    </div>
+    <div class="met met-gold">
+      <div class="met-label"><i class="ti ti-user-check" style="font-size:14px;" aria-hidden="true"></i> En pista</div>
+      <div class="met-val">61%</div>
+      <div class="met-sub">52 bailando</div>
+    </div>
+    <div class="met">
+      <div class="met-label"><i class="ti ti-music" style="font-size:14px;" aria-hidden="true"></i> Tanda</div>
+      <div class="met-val">4 / 18</div>
+      <div class="met-sub">Tango · D'Arienzo</div>
+    </div>
+    <div class="met">
+      <div class="met-label"><i class="ti ti-clock" style="font-size:14px;" aria-hidden="true"></i> Restante</div>
+      <div class="met-val">1h 45m</div>
+      <div class="met-sub">Fin estimado 01:30</div>
+    </div>
+  </div>
 
-<details>
-<summary>🎵 Arquitectura General</summary>
+  <div class="cols2">
+    <div class="card">
+      <div class="card-title">Sonando ahora</div>
+      <div class="track-name">La Cumparsita</div>
+      <div class="track-orq">Juan D'Arienzo · 1943</div>
+      <div class="chips">
+        <span class="chip ch-tango">Tango</span>
+        <span class="chip ch-gold">168 BPM</span>
+        <span class="chip ch-gold">Energía alta</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-bg"><div class="prog-fill"></div></div>
+        <div class="prog-times"><span>1:14</span><span>3:12</span></div>
+      </div>
+    </div>
 
-<div class="box">
+    <div class="card">
+      <div class="card-title">Próximas tandas</div>
+      <div class="queue-list">
+        <div class="q-item">
+          <span class="q-arrow"><i class="ti ti-arrow-right" style="font-size:13px;" aria-hidden="true"></i></span>
+          <div class="q-info">
+            <div class="q-track">Cortina · Piazzolla</div>
+            <div class="q-orq">45 seg · transición</div>
+          </div>
+          <span class="chip ch-cortina">Cortina</span>
+        </div>
+        <div class="q-item">
+          <span class="q-num" style="color:#5A5A5A;">5</span>
+          <div class="q-info">
+            <div class="q-track">Tanda vals · Canaro</div>
+            <div class="q-orq">4 temas · energía media</div>
+          </div>
+          <span class="chip ch-vals">Vals</span>
+        </div>
+        <div class="q-item">
+          <span class="q-num" style="color:#5A5A5A;">6</span>
+          <div class="q-info">
+            <div class="q-track">Tanda milonga · D'Arienzo</div>
+            <div class="q-orq">4 temas · energía alta</div>
+          </div>
+          <span class="chip ch-milonga">Milonga</span>
+        </div>
+        <div class="q-item">
+          <span class="q-num" style="color:#5A5A5A;">7</span>
+          <div class="q-info">
+            <div class="q-track">Tanda tango · Di Sarli</div>
+            <div class="q-orq">4 temas · energía suave</div>
+          </div>
+          <span class="chip ch-tango">Tango</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<p class="flow">
+  <div class="cols3" style="margin-top:10px;">
+    <div class="card">
+      <div class="card-title">Estado de la pista</div>
+      <div class="pista-rows">
+        <div class="p-row">
+          <span class="p-label">Ocupación</span>
+          <div class="p-bar"><div class="p-fill fill-g" style="width:61%;"></div></div>
+          <span class="p-val">61%</span>
+        </div>
+        <div class="p-row">
+          <span class="p-label">Nivel audio</span>
+          <div class="p-bar"><div class="p-fill fill-g" style="width:72%;"></div></div>
+          <span class="p-val">72%</span>
+        </div>
+        <div class="p-row">
+          <span class="p-label">Aplausos</span>
+          <div class="p-bar"><div class="p-fill fill-a" style="width:45%;"></div></div>
+          <span class="p-val">45%</span>
+        </div>
+        <div class="p-row">
+          <span class="p-label">Abandono</span>
+          <div class="p-bar"><div class="p-fill fill-r" style="width:8%;"></div></div>
+          <span class="p-val">8%</span>
+        </div>
+      </div>
+      <div class="ia-box">
+        <div class="ia-label">IA · recomendación</div>
+        <div class="ia-text">Pista responde bien. Mantengo energía alta en próxima tanda.</div>
+      </div>
+    </div>
 
-Organizador
+    <div class="card">
+      <div class="card-title">Pedidos del público</div>
+      <div class="pedidos">
+        <div class="ped-item">
+          <div class="ped-av">MR</div>
+          <div class="ped-info">
+            <div class="ped-song">El choclo · Di Sarli</div>
+            <div class="ped-mesa">Mesa 4</div>
+          </div>
+          <span class="ped-votes">+7 <i class="ti ti-heart" style="font-size:11px;" aria-hidden="true"></i></span>
+        </div>
+        <div class="ped-item">
+          <div class="ped-av">LP</div>
+          <div class="ped-info">
+            <div class="ped-song">Bahía Blanca · Di Sarli</div>
+            <div class="ped-mesa">Mesa 9</div>
+          </div>
+          <span class="ped-votes">+4 <i class="ti ti-heart" style="font-size:11px;" aria-hidden="true"></i></span>
+        </div>
+        <div class="ped-item">
+          <div class="ped-av">AC</div>
+          <div class="ped-info">
+            <div class="ped-song">La yumba · Pugliese</div>
+            <div class="ped-mesa">Mesa 2</div>
+          </div>
+          <span class="ped-votes">+2 <i class="ti ti-heart" style="font-size:11px;" aria-hidden="true"></i></span>
+        </div>
+      </div>
+    </div>
 
-↓
-
-MilongIA Cloud
-
-↓
-
-IA Musical
-
-↓
-
-Proveedor Musical
-
-↓
-
-Parlantes
-
-</p>
-
+    <div class="card">
+      <div class="card-title">Audio · control IA</div>
+      <div class="vol-rows">
+        <div class="v-row">
+          <span class="v-label">Volumen</span>
+          <input type="range" min="0" max="100" value="72" step="1" id="vol">
+          <span class="v-val" id="vol-out">72</span>
+        </div>
+        <div class="v-row">
+          <span class="v-label">Graves</span>
+          <input type="range" min="0" max="100" value="55" step="1" id="bass">
+          <span class="v-val" id="bass-out">55</span>
+        </div>
+        <div class="v-row">
+          <span class="v-label">Agudos</span>
+          <input type="range" min="0" max="100" value="48" step="1" id="treble">
+          <span class="v-val" id="treble-out">48</span>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div class="vol-rows">
+        <div class="status-row">
+          <span class="status-label">Normalización</span>
+          <span class="status-on"><i class="ti ti-check" style="font-size:12px;" aria-hidden="true"></i> Activa</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Fade automático</span>
+          <span class="status-on"><i class="ti ti-check" style="font-size:12px;" aria-hidden="true"></i> Activo</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Modo</span>
+          <span class="status-auto"><i class="ti ti-cpu" style="font-size:12px;" aria-hidden="true"></i> IA automático</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-</details>
-
-<details>
-<summary>🌎 Portal del Organizador</summary>
-
-<div class="box">
-
-<ul>
-<li>Login</li>
-<li>Crear Milonga</li>
-<li>Configurar Perfil</li>
-<li>Conectar Cámara</li>
-<li>Conectar Micrófono</li>
-<li>Conectar Pantalla</li>
-<li>Iniciar Evento</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>🎶 Motor Musical</summary>
-
-<div class="box">
-
-<ul>
-<li>Arma tandas automáticamente</li>
-<li>Inserta cortinas</li>
-<li>Controla energía de la pista</li>
-<li>Evita repeticiones</li>
-<li>Aprende de eventos anteriores</li>
-<li>Integra pedidos del público</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>🎼 Biblioteca Mundial de Tango</summary>
-
-<div class="box">
-
-<ul>
-<li>Orquestas clásicas</li>
-<li>Orquestas contemporáneas</li>
-<li>Sexteto Milonguero</li>
-<li>Tango</li>
-<li>Vals</li>
-<li>Milonga</li>
-<li>Cortinas</li>
-</ul>
-
-Cada tema almacena:
-
-<ul>
-<li>Calidad</li>
-<li>Popularidad</li>
-<li>Cantidad de reproducciones</li>
-<li>Resultado en pista</li>
-<li>Volumen normalizado</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>📷 Cámara Inteligente</summary>
-
-<div class="box">
-
-<ul>
-<li>Conteo de personas</li>
-<li>Ocupación de pista</li>
-<li>Tiempo promedio bailando</li>
-<li>Detección de abandono de pista</li>
-<li>Análisis de éxito de tandas</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>🎤 Micrófono Inteligente</summary>
-
-<div class="box">
-
-<ul>
-<li>Nivel de ruido ambiente</li>
-<li>Aplausos</li>
-<li>Conversación general</li>
-<li>Respuesta del público</li>
-</ul>
-
-La IA ajusta:
-
-<ul>
-<li>Volumen</li>
-<li>Energía</li>
-<li>Selección de tandas</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>🧠 Aprendizaje Global</summary>
-
-<div class="box">
-
-MilongIA aprende de todas las milongas.
-
-Ejemplos:
-
-<ul>
-<li>Qué orquestas llenan más la pista</li>
-<li>Qué tandas funcionan mejor</li>
-<li>Qué horarios favorecen cada estilo</li>
-<li>Qué ocurre según país o ciudad</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>📱 Participación del Público</summary>
-
-<div class="box">
-
-<ul>
-<li>QR</li>
-<li>Pedidos</li>
-<li>Votaciones</li>
-<li>Dedicatorias</li>
-<li>Estadísticas en vivo</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>⚙️ Stack MVP</summary>
-
-<div class="box">
-
-<ul>
-<li>GitHub Pages</li>
-<li>Google Apps Script</li>
-<li>Google Sheets</li>
-<li>PWA</li>
-<li>WebRTC Cámara</li>
-<li>Web Audio API</li>
-<li>OpenAI API</li>
-</ul>
-
-</div>
-
-</details>
-
-<details>
-<summary>🚀 Visión Final</summary>
-
-<div class="box">
-
-El organizador conecta:
-
-<ul>
-<li>PC</li>
-<li>Parlantes</li>
-<li>Cámara</li>
-<li>Micrófono</li>
-<li>Pantalla (opcional)</li>
-</ul>
-
-Presiona:
-
-<h2>INICIAR MILONGA</h2>
-
-Y MilongIA actúa como TDJ profesional autónomo.
-
-</div>
-
-</details>
-
-</body>
-</html>
+<script>
+['vol','bass','treble'].forEach(id=>{
+  const s=document.getElementById(id);
+  const o=document.getElementById(id+'-out');
+  if(s&&o)s.addEventListener('input',()=>o.textContent=Math.round(s.value));
+});
+</script>

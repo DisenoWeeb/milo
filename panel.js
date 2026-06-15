@@ -107,8 +107,12 @@ async function fetchBiblioteca() {
 
 async function fetchTanda(estilo) {
   try {
-    const res  = await fetch(GAS_URL + '?action=getTanda&estilo=' + estilo);
+    const url = GAS_URL + '?action=getTanda&estilo=' + estilo;
+    console.log('Llamando:', url);
+    const res  = await fetch(url);
+    console.log('Status:', res.status);
     const data = await res.json();
+    console.log('Tanda recibida:', data);
     renderTanda(data);
   } catch (e) {
     console.warn('Error cargando tanda:', e);

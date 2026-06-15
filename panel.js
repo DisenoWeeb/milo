@@ -91,21 +91,40 @@ function renderEstado(estado) {
 
 renderEstado(estadoDemo);
 
-// ── API Apps Script ────────────────────────────────────────────────────────
-// Cuando el backend esté listo, reemplazar con:
-//
-// const GAS_URL = 'https://script.google.com/macros/s/TU_ID/exec';
-//
-// async function fetchEstado() {
-//   try {
-//     const res  = await fetch(GAS_URL + '?action=getEstado');
-//     const data = await res.json();
-//     renderEstado(data);
-//   } catch (e) {
-//     console.warn('Sin conexión con el motor:', e);
-//   }
-// }
-// fetchEstado();
-// setInterval(fetchEstado, 10000);
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5NVX8ICStvL-jp4XvuA21SD0JOLYPoHWuDsalDGZh8bpmoMzuMcPquFxLrZihsdGj/exec';
 
+async function fetchBiblioteca() {
+  try {
+    const res  = await fetch(GAS_URL + '?action=getBiblioteca');
+    const data = await res.json();
+    console.log('Biblioteca cargada:', data.length, 'temas');
+    return data;
+  } catch (e) {
+    console.warn('Error cargando biblioteca:', e);
+    return [];
+  }
+}
+
+async function fetchTanda(estilo) {
+  try {
+    const res  = await fetch(GAS_URL + '?action=getTanda&estilo=' + estilo);
+    const data = await res.json();
+    renderTanda(data);
+  } catch (e) {
+    console.warn('Error cargando tanda:', e);
+  }
+}
+
+function renderTanda(data) {
+  const temas = data.temas;
+  if (!temas || temas.length === 0) return;
+  const primero = temas[0];
+  document.getElementById('now-name').textContent = primero.Titulo;
+  document.getElementById('now-orq').textContent  = primero.Orquesta + ' · ' + primero.Anio;
+  document.getElementById('m-tanda-sub').textContent = primero.Estilo + ' · ' + primero.Orquesta;
+  document.getElementById('time-total').textContent  = primero.Duracion;
+}
+
+// Arrancar
+fetchTanda('Tango');
 console.log('MilongIA panel v0.1 · motor listo');

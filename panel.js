@@ -16,7 +16,7 @@ window.onYouTubeIframeAPIReady = function () {
     height: '1',
     width: '1',
     videoId: '',
-    playerVars: { autoplay: 0, controls: 0 },
+    playerVars: { autoplay: 0, controls: 0, origin: 'https://disenoweeb.github.io' },
     events: {
       onStateChange: onPlayerStateChange,
       onError: onPlayerError,

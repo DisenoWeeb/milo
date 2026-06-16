@@ -1,20 +1,24 @@
-/* MilongIA · panel.js v0.4 */
+/* MilongIA · panel.js v0.5 */
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5NVX8ICStvL-jp4XvuA21SD0JOLYPoHWuDsalDGZh8bpmoMzuMcPquFxLrZihsdGj/exec';
 
-// ── Estado global ─────────────────────────────────────────────────────────
-let biblioteca    = [];
+const CORTINA_DURACION_SEG = 45;   // cortar cortina a los 45 s
+const POLLING_INTERVAL_MS  = 30000; // chequear biblioteca cada 30 s
+
+// ── Estado global ──────────────────────────────────────────────────────────
+let biblioteca    = [];   // array de temas en orden
 let indexActual   = 0;
 let ytPlayer      = null;
 let ytReady       = false;
 let estadoPanel   = 'idle';
 let progressTimer = null;
+let cortinaTimer  = null; // timer exclusivo para cortar cortina
+let pollingTimer  = null; // intervalo de polling de biblioteca
 
-// ── YouTube IFrame API ────────────────────────────────────────────────────
-// Solo se llama cuando el usuario presiona Iniciar por primera vez
-function initYouTubePlayer(videoId, onReady) {
+// ── YouTube IFrame API ─────────────────────────────────────────────────────
+function initYouTubePlayer(videoId) {
   if (ytPlayer) {
-    // Player ya existe, cargar video directamente
+    // Player ya existe — solo cargar el video; el progress arranca en onStateChange
     ytPlayer.loadVideoById(videoId);
     return;
   }
@@ -24,20 +28,33 @@ function initYouTubePlayer(videoId, onReady) {
     width:  '200',
     videoId: videoId,
     playerVars: {
-      autoplay:   1,
-      controls:   0,
-      origin:     'https://disenoweeb.github.io',
+      autoplay:    1,
+      controls:    0,
+      origin:      location.origin,
       enablejsapi: 1,
     },
     events: {
-      onReady:       () => { ytReady = true; if (onReady) onReady(); },
+      onReady:       onPlayerReady,
       onStateChange: onPlayerStateChange,
       onError:       onPlayerError,
     }
   });
 }
 
+function onPlayerReady() {
+  ytReady = true;
+  // El video ya empezó a reproducirse (autoplay=1).
+  // Arrancamos el progress usando el tema actual.
+  const tema = biblioteca[indexActual];
+  if (tema && estadoPanel === 'playing') iniciarProgress(tema);
+}
+
 function onPlayerStateChange(event) {
+  // PLAYING (1): arrancamos progress solo si el player ya existía (no primera vez)
+  if (event.data === YT.PlayerState.PLAYING && ytReady) {
+    const tema = biblioteca[indexActual];
+    if (tema && estadoPanel === 'playing') iniciarProgress(tema);
+  }
   if (event.data === YT.PlayerState.ENDED) avanzarTema();
 }
 
@@ -46,36 +63,63 @@ function onPlayerError(event) {
   setTimeout(avanzarTema, 1500);
 }
 
-// ── YouTube IFrame API ready (callback global requerido) ──────────────────
 window.onYouTubeIframeAPIReady = function () {
   console.log('MilongIA: YouTube API lista');
-  // No inicializamos el player aquí — esperamos que el usuario presione Iniciar
 };
 
-// ── Carga desde Google Sheets ─────────────────────────────────────────────
+// ── Polling de biblioteca ──────────────────────────────────────────────────
+function iniciarPolling() {
+  if (pollingTimer) return; // ya corriendo
+  pollingTimer = setInterval(fetchBiblioteca, POLLING_INTERVAL_MS);
+}
+
+// ── Carga desde Google Sheets ──────────────────────────────────────────────
 async function fetchBiblioteca() {
-  mostrarEstadoCarga('Cargando temas desde la biblioteca…');
+  // Primera carga: mostramos estado; en polling silencioso
+  const esPrimeraCarga = biblioteca.length === 0;
+  if (esPrimeraCarga) mostrarEstadoCarga('Cargando temas desde la biblioteca…');
+
   try {
     const res  = await fetch(GAS_URL + '?action=getBiblioteca');
     const data = await res.json();
-    biblioteca = data;
-    console.log('MilongIA: biblioteca cargada,', biblioteca.length, 'temas');
-    mostrarEstadoCarga(null);
-    renderBibliotecaCargada();
-    actualizarBotones();
+
+    // ── Detectar temas nuevos (por ID) ──────────────────────────────────
+    const idsActuales = new Set(biblioteca.map(t => t.ID));
+    const temasNuevos = data.filter(t => !idsActuales.has(t.ID));
+
+    if (temasNuevos.length > 0) {
+      // Agregar al final de la biblioteca sin tocar lo que está sonando
+      biblioteca = biblioteca.concat(temasNuevos);
+      console.log('MilongIA: +' + temasNuevos.length + ' temas nuevos agregados. Total:', biblioteca.length);
+      mostrarToast('+' + temasNuevos.length + ' tema' + (temasNuevos.length > 1 ? 's' : '') + ' nuevo' + (temasNuevos.length > 1 ? 's' : '') + ' cargado' + (temasNuevos.length > 1 ? 's' : ''));
+    }
+
+    if (esPrimeraCarga) {
+      mostrarEstadoCarga(null);
+      renderBibliotecaCargada();
+      actualizarBotones();
+      iniciarPolling(); // arrancar polling recién después de la primera carga exitosa
+    } else {
+      // Actualizar cola si hay temas nuevos
+      if (temasNuevos.length > 0 && estadoPanel === 'playing') {
+        renderCola(biblioteca.slice(indexActual + 1, indexActual + 6));
+        actualizarContadorTemas();
+      }
+    }
+
   } catch (e) {
     console.warn('Error cargando biblioteca:', e);
-    mostrarEstadoCarga('Error al conectar con la biblioteca.');
+    if (esPrimeraCarga) mostrarEstadoCarga('Error al conectar con la biblioteca.');
   }
 }
 
-// ── Controles principales ─────────────────────────────────────────────────
+// ── Controles principales ──────────────────────────────────────────────────
 function iniciarMilonga() {
   if (!biblioteca.length) return;
   if (estadoPanel === 'paused') { reanudar(); return; }
 
-  estadoPanel  = 'playing';
-  indexActual  = 0;
+  estadoPanel = 'playing';
+  indexActual = 0;
   actualizarBotones();
   actualizarLiveBadge();
   reproducirTema(indexActual);
@@ -85,7 +129,7 @@ function pausarMilonga() {
   if (estadoPanel !== 'playing') return;
   estadoPanel = 'paused';
   if (ytPlayer && ytReady) ytPlayer.pauseVideo();
-  if (progressTimer) clearInterval(progressTimer);
+  detenerTimers();
   actualizarBotones();
   actualizarLiveBadge();
   setEl('ia-texto', 'Milonga en pausa.');
@@ -96,14 +140,13 @@ function reanudar() {
   if (ytPlayer && ytReady) ytPlayer.playVideo();
   actualizarBotones();
   actualizarLiveBadge();
-  const tema = biblioteca[indexActual];
-  if (tema) iniciarProgress(tema.Duracion);
+  // el progress retoma desde onPlayerStateChange → PLAYING
 }
 
 function stopMilonga() {
   estadoPanel = 'stopped';
   if (ytPlayer && ytReady) ytPlayer.stopVideo();
-  if (progressTimer) clearInterval(progressTimer);
+  detenerTimers();
   actualizarBotones();
   actualizarLiveBadge();
   resetProgressUI();
@@ -113,7 +156,7 @@ function stopMilonga() {
   renderCola([]);
 }
 
-// ── Reproducción ──────────────────────────────────────────────────────────
+// ── Reproducción ───────────────────────────────────────────────────────────
 function reproducirTema(index) {
   if (index >= biblioteca.length) { finDeLaNoche(); return; }
 
@@ -126,17 +169,20 @@ function reproducirTema(index) {
     return;
   }
 
+  detenerTimers(); // limpiar progress y cortina anteriores
   renderTemaActual(tema, index);
   renderCola(biblioteca.slice(index + 1, index + 6));
 
-  // Primera vez: crear el player con el video ya cargado
-  initYouTubePlayer(videoId, () => {
-    // onReady solo se llama la primera vez; el autoplay=1 ya lo arranca
-    iniciarProgress(tema.Duracion);
-  });
+  // Si es cortina → programar corte a los 45 s
+  if (esCortina(tema)) {
+    cortinaTimer = setTimeout(function () {
+      console.log('MilongIA: cortina cortada a los ' + CORTINA_DURACION_SEG + 's');
+      avanzarTema();
+    }, CORTINA_DURACION_SEG * 1000);
+  }
 
-  // Si el player ya existía, iniciar progress directamente
-  if (ytReady) iniciarProgress(tema.Duracion);
+  initYouTubePlayer(videoId);
+  // El progress arranca desde onPlayerReady (primera vez) o onPlayerStateChange PLAYING (siguientes)
 }
 
 function avanzarTema() {
@@ -145,20 +191,22 @@ function avanzarTema() {
   reproducirTema(indexActual);
 }
 
-// ── Render ────────────────────────────────────────────────────────────────
+function esCortina(tema) {
+  return (tema.Estilo || '').toLowerCase() === 'cortina';
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
 function renderBibliotecaCargada() {
   setEl('now-name', 'Listo para iniciar');
   setEl('now-orq',  biblioteca.length + ' temas cargados desde la biblioteca');
-  setEl('m-tanda',  '0 / ' + biblioteca.length);
+  actualizarContadorTemas();
   setEl('ia-texto', 'Sin datos de pista aún. Reproducirá en orden de biblioteca.');
 
   const chips = document.getElementById('now-chips');
   if (chips) chips.innerHTML = '<span class="chip ch-cortina">Sin datos aún</span>';
 
-  // Preview de los primeros temas en la cola
   renderCola(biblioteca.slice(0, 5));
 
-  // Actualizar live badge
   const badge = document.getElementById('live-badge');
   if (badge) badge.innerHTML = '<div class="live-dot" style="background:#c9a84c"></div> ' + biblioteca.length + ' temas listos';
 }
@@ -168,17 +216,26 @@ function renderTemaActual(tema, index) {
   setEl('now-orq',     tema.Orquesta + ' · ' + tema.Anio);
   setEl('m-tanda-sub', tema.Estilo + ' · ' + tema.Orquesta);
   setEl('m-tanda',     (index + 1) + ' / ' + biblioteca.length);
-  setEl('time-total',  tema.Duracion);
-  setEl('ia-texto',    'Sin datos de pista aún · reproduciendo en orden de biblioteca.');
+  setEl('ia-texto',    esCortina(tema)
+    ? '🎵 Cortina · se cortará automáticamente a los ' + CORTINA_DURACION_SEG + 's.'
+    : 'Sin datos de pista aún · reproduciendo en orden de biblioteca.');
+
+  // Duración visual: cortina muestra 0:45 aunque el video sea más largo
+  const duracionMostrar = esCortina(tema) ? '0:' + CORTINA_DURACION_SEG : tema.Duracion;
+  setEl('time-total', duracionMostrar);
 
   const chips = document.getElementById('now-chips');
   if (chips) chips.innerHTML =
-    '<span class="chip ch-' + tema.Estilo.toLowerCase() + '">' + tema.Estilo + '</span>' +
+    '<span class="chip ch-' + (tema.Estilo || '').toLowerCase() + '">' + tema.Estilo + '</span>' +
     '<span class="chip ch-gold">' + (tema.BPM > 0 ? tema.BPM + ' BPM' : '—') + '</span>' +
     '<span class="chip ch-gold">Energía ' + (tema.Energia || '').toLowerCase() + '</span>';
 
   const footer = document.querySelector('.ia-inline span');
   if (footer) footer.textContent = 'Tema ' + (index + 1) + ' de ' + biblioteca.length + ' · sin IA aún';
+}
+
+function actualizarContadorTemas() {
+  setEl('m-tanda', (estadoPanel === 'playing' ? (indexActual + 1) : '0') + ' / ' + biblioteca.length);
 }
 
 function renderCola(temas) {
@@ -199,14 +256,14 @@ function renderCola(temas) {
         : '<span class="q-num">' + num + '</span>') +
       '<div class="q-info">' +
         '<div class="q-track">' + t.Titulo + ' · ' + t.Orquesta + '</div>' +
-        '<div class="q-orq">' + t.Duracion + ' · ' + (t.Energia || '').toLowerCase() + '</div>' +
+        '<div class="q-orq">' + (esCortina(t) ? '0:45' : t.Duracion) + ' · ' + (t.Energia || '').toLowerCase() + '</div>' +
       '</div>' +
       '<span class="chip ch-' + (t.Estilo || '').toLowerCase() + '">' + t.Estilo + '</span>' +
       '</div>';
   }).join('');
 }
 
-// ── Botones ───────────────────────────────────────────────────────────────
+// ── Botones ────────────────────────────────────────────────────────────────
 function actualizarBotones() {
   var btnIniciar = document.getElementById('btn-iniciar');
   var btnPausar  = document.getElementById('btn-pausar');
@@ -214,20 +271,20 @@ function actualizarBotones() {
   if (!btnIniciar) return;
 
   if (estadoPanel === 'idle' || estadoPanel === 'stopped') {
-    btnIniciar.disabled = !biblioteca.length;
+    btnIniciar.disabled  = !biblioteca.length;
     btnIniciar.innerHTML = '<i class="ti ti-player-play"></i> Iniciar milonga';
-    btnPausar.disabled = true;
-    btnStop.disabled   = true;
+    btnPausar.disabled   = true;
+    btnStop.disabled     = true;
   } else if (estadoPanel === 'playing') {
-    btnIniciar.disabled = true;
-    btnPausar.disabled  = false;
-    btnStop.disabled    = false;
-    btnPausar.innerHTML = '<i class="ti ti-player-pause"></i> Pausar';
+    btnIniciar.disabled  = true;
+    btnPausar.disabled   = false;
+    btnStop.disabled     = false;
+    btnPausar.innerHTML  = '<i class="ti ti-player-pause"></i> Pausar';
   } else if (estadoPanel === 'paused') {
-    btnIniciar.disabled = false;
+    btnIniciar.disabled  = false;
     btnIniciar.innerHTML = '<i class="ti ti-player-play"></i> Continuar';
-    btnPausar.disabled  = true;
-    btnStop.disabled    = false;
+    btnPausar.disabled   = true;
+    btnStop.disabled     = false;
   }
 }
 
@@ -243,14 +300,19 @@ function actualizarLiveBadge() {
   }
 }
 
-// ── Progreso ──────────────────────────────────────────────────────────────
-function iniciarProgress(duracion) {
+// ── Progreso ───────────────────────────────────────────────────────────────
+function iniciarProgress(tema) {
   if (progressTimer) clearInterval(progressTimer);
-  var partes   = (duracion || '0:00').split(':');
+
+  // Para cortinas, el total visible es siempre 45 s
+  var durStr   = esCortina(tema) ? '0:' + CORTINA_DURACION_SEG : (tema.Duracion || '0:00');
+  var partes   = durStr.split(':');
   var totalSeg = (+partes[0]) * 60 + (+(partes[1] || 0));
   var curSeg   = 0;
 
-  progressTimer = setInterval(function() {
+  setEl('time-total', durStr);
+
+  progressTimer = setInterval(function () {
     curSeg++;
     var pct = Math.min((curSeg / totalSeg) * 100, 100);
     var pf  = document.getElementById('progress-fill');
@@ -270,15 +332,42 @@ function resetProgressUI() {
   if (tt) tt.textContent = '0:00';
 }
 
-// ── Estado de carga ───────────────────────────────────────────────────────
+// ── Timers helpers ─────────────────────────────────────────────────────────
+function detenerTimers() {
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+  if (cortinaTimer)  { clearTimeout(cortinaTimer);   cortinaTimer  = null; }
+}
+
+// ── Toast notificación temas nuevos ───────────────────────────────────────
+function mostrarToast(msg) {
+  var toast = document.getElementById('milongia-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'milongia-toast';
+    toast.style.cssText = [
+      'position:fixed', 'bottom:24px', 'right:24px',
+      'background:#1a1a1a', 'color:#c9a84c',
+      'border:1px solid #c9a84c', 'border-radius:8px',
+      'padding:10px 18px', 'font-size:13px',
+      'z-index:9999', 'opacity:0',
+      'transition:opacity .3s'
+    ].join(';');
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(function () { toast.style.opacity = '0'; }, 3000);
+}
+
+// ── Estado de carga ────────────────────────────────────────────────────────
 function mostrarEstadoCarga(msg) {
   var el = document.getElementById('carga-estado');
   if (!el) return;
-  el.textContent    = msg || '';
-  el.style.display  = msg ? 'block' : 'none';
+  el.textContent   = msg || '';
+  el.style.display = msg ? 'block' : 'none';
 }
 
-// ── Fin de la noche ───────────────────────────────────────────────────────
+// ── Fin de la noche ────────────────────────────────────────────────────────
 function finDeLaNoche() {
   estadoPanel = 'stopped';
   actualizarBotones();
@@ -289,7 +378,7 @@ function finDeLaNoche() {
   renderCola([]);
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 function extraerVideoId(url) {
   if (!url) return null;
   var match = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -301,7 +390,7 @@ function setEl(id, val) {
   if (el) el.textContent = val;
 }
 
-// ── Reloj ─────────────────────────────────────────────────────────────────
+// ── Reloj ──────────────────────────────────────────────────────────────────
 function updateClock() {
   var now = new Date();
   setEl('evento-hora',
@@ -309,22 +398,22 @@ function updateClock() {
     now.getMinutes().toString().padStart(2, '0'));
 }
 
-// ── Sliders ───────────────────────────────────────────────────────────────
+// ── Sliders ────────────────────────────────────────────────────────────────
 function initSliders() {
-  ['vol', 'bass', 'treble'].forEach(function(id) {
+  ['vol', 'bass', 'treble'].forEach(function (id) {
     var s = document.getElementById(id);
     var o = document.getElementById(id + '-out');
-    if (s && o) s.addEventListener('input', function() { o.textContent = Math.round(s.value); });
+    if (s && o) s.addEventListener('input', function () { o.textContent = Math.round(s.value); });
   });
 }
 
-// ── Arranque ──────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+// ── Arranque ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
   updateClock();
   setInterval(updateClock, 30000);
   initSliders();
   actualizarBotones();
-  fetchBiblioteca();
+  fetchBiblioteca(); // carga inicial + arranca polling al completar
 });
 
-console.log('MilongIA panel v0.4 · modo real activo');
+console.log('MilongIA panel v0.5 · polling activo · cortina 45s');

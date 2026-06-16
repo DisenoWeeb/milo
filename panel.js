@@ -83,25 +83,46 @@ async function fetchBiblioteca() {
     const res  = await fetch(GAS_URL + '?action=getBiblioteca');
     const data = await res.json();
 
-    // ── Detectar temas nuevos (por ID) ──────────────────────────────────
-    const idsActuales = new Set(biblioteca.map(t => t.ID));
-    const temasNuevos = data.filter(t => !idsActuales.has(t.ID));
-
-    if (temasNuevos.length > 0) {
-      // Agregar al final de la biblioteca sin tocar lo que está sonando
-      biblioteca = biblioteca.concat(temasNuevos);
-      console.log('MilongIA: +' + temasNuevos.length + ' temas nuevos agregados. Total:', biblioteca.length);
-      mostrarToast('+' + temasNuevos.length + ' tema' + (temasNuevos.length > 1 ? 's' : '') + ' nuevo' + (temasNuevos.length > 1 ? 's' : '') + ' cargado' + (temasNuevos.length > 1 ? 's' : ''));
-    }
-
     if (esPrimeraCarga) {
+      // ── Primera carga: tomar todo tal cual ──────────────────────────────
+      biblioteca = data;
       mostrarEstadoCarga(null);
       renderBibliotecaCargada();
       actualizarBotones();
-      iniciarPolling(); // arrancar polling recién después de la primera carga exitosa
+      iniciarPolling();
+
     } else {
-      // Actualizar cola si hay temas nuevos
-      if (temasNuevos.length > 0 && estadoPanel === 'playing') {
+      // ── Polling: sincronizar sin interrumpir el tema actual ──────────────
+      const idsSheet   = new Set(data.map(t => t.ID));
+      const temaActual = biblioteca[indexActual]; // lo que suena ahora
+
+      // Temas ya reproducidos (antes de indexActual): los dejamos intactos
+      const yaReproducidos = biblioteca.slice(0, indexActual + 1);
+
+      // Cola pendiente: solo los que siguen existiendo en el Sheet + los nuevos del Sheet
+      const idsYaEnCola = new Set(yaReproducidos.map(t => t.ID));
+      const colaNueva   = data.filter(t => !idsYaEnCola.has(t.ID));
+
+      const longitudAntes = biblioteca.length;
+      biblioteca = yaReproducidos.concat(colaNueva);
+
+      // Recalcular indexActual por si el tema actual cambió de posición
+      // (en teoría no cambia porque está en yaReproducidos, pero por seguridad)
+      const nuevoIndex = biblioteca.findIndex(t => t.ID === temaActual.ID);
+      if (nuevoIndex !== -1 && nuevoIndex !== indexActual) {
+        indexActual = nuevoIndex;
+      }
+
+      const diff = biblioteca.length - longitudAntes;
+      if (diff > 0) {
+        mostrarToast('+' + diff + ' tema' + (diff > 1 ? 's' : '') + ' agregado' + (diff > 1 ? 's' : ''));
+        console.log('MilongIA: +' + diff + ' temas. Total:', biblioteca.length);
+      } else if (diff < 0) {
+        mostrarToast(Math.abs(diff) + ' tema' + (Math.abs(diff) > 1 ? 's' : '') + ' eliminado' + (Math.abs(diff) > 1 ? 's' : '') + ' de la cola');
+        console.log('MilongIA: ' + diff + ' temas eliminados. Total:', biblioteca.length);
+      }
+
+      if (diff !== 0 && estadoPanel === 'playing') {
         renderCola(biblioteca.slice(indexActual + 1, indexActual + 6));
         actualizarContadorTemas();
       }

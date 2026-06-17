@@ -2,8 +2,14 @@
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5NVX8ICStvL-jp4XvuA21SD0JOLYPoHWuDsalDGZh8bpmoMzuMcPquFxLrZihsdGj/exec';
 
-const CORTINA_DURACION_SEG = 45;   // cortar cortina a los 45 s
+// ⚠️ Reemplazar por la URL del GAS de Cámara una vez deployado
+const CAMARA_GAS_URL = 'https://script.google.com/macros/s/TU_DEPLOYMENT_ID_CAMARA/exec';
+
+const CORTINA_DURACION_SEG = 45;    // cortar cortina a los 45 s
 const POLLING_INTERVAL_MS  = 30000; // chequear biblioteca cada 30 s
+const PISTA_POLLING_MS     = 30000; // chequear conteo de pista cada 30 s
+const ABANDONO_UMBRAL_PCT  = 25;    // % de caída en personas para marcar "abandono"
+const ABANDONO_VENTANA_MIN = 5;     // comparar contra el conteo de hace N minutos
 
 // ── Estado global ──────────────────────────────────────────────────────────
 let biblioteca    = [];   // array de temas en orden
@@ -14,6 +20,10 @@ let estadoPanel   = 'idle';
 let progressTimer = null;
 let cortinaTimer  = null; // timer exclusivo para cortar cortina
 let pollingTimer  = null; // intervalo de polling de biblioteca
+
+// ── Estado de pista (cámara) ─────────────────────────────────────────────
+let historialPista   = []; // [{timestamp, personas}, ...]
+let pistaPollingTimer = null;
 
 // ── YouTube IFrame API ─────────────────────────────────────────────────────
 function initYouTubePlayer(videoId) {
@@ -428,13 +438,95 @@ function initSliders() {
   });
 }
 
+// ── Pista (cámara) ──────────────────────────────────────────────────────
+async function fetchPista() {
+  try {
+    const res  = await fetch(CAMARA_GAS_URL + '?action=getPista');
+    const data = await res.json();
+
+    if (!Array.isArray(data)) return; // respuesta inesperada, ignorar
+
+    historialPista = data;
+    actualizarUIPista();
+
+  } catch (e) {
+    console.warn('MilongIA: error leyendo pista de cámara:', e);
+  }
+}
+
+function iniciarPollingPista() {
+  if (pistaPollingTimer) return;
+  fetchPista(); // primera lectura inmediata
+  pistaPollingTimer = setInterval(fetchPista, PISTA_POLLING_MS);
+}
+
+function actualizarUIPista() {
+  if (!historialPista.length) return;
+
+  const ultimo = historialPista[historialPista.length - 1];
+  setEl('m-pista', ultimo.personas != null ? ultimo.personas : '—');
+
+  const referencia = buscarConteoHaceMinutos(ABANDONO_VENTANA_MIN);
+  if (referencia == null || !ultimo.personas) {
+    setEl('m-pista-sub', 'sin referencia aún');
+    return;
+  }
+
+  const caida = referencia > 0
+    ? Math.round(((referencia - ultimo.personas) / referencia) * 100)
+    : 0;
+
+  if (caida >= ABANDONO_UMBRAL_PCT) {
+    setEl('m-pista-sub', '↓ ' + caida + '% · posible abandono');
+    marcarAbandono(true, caida);
+  } else {
+    setEl('m-pista-sub', referencia + ' hace ' + ABANDONO_VENTANA_MIN + 'min');
+    marcarAbandono(false, caida);
+  }
+}
+
+// ── Buscar el conteo registrado hace aproximadamente N minutos ──────────
+function buscarConteoHaceMinutos(minutos) {
+  if (historialPista.length < 2) return null;
+
+  const ahora       = new Date(historialPista[historialPista.length - 1].timestamp);
+  const objetivoMs  = ahora.getTime() - minutos * 60 * 1000;
+
+  // Buscar el registro más cercano (hacia atrás) a ese momento
+  let masCercano = null;
+  let menorDiff  = Infinity;
+
+  historialPista.forEach(function (registro) {
+    const t    = new Date(registro.timestamp).getTime();
+    const diff = Math.abs(t - objetivoMs);
+    if (diff < menorDiff) {
+      menorDiff  = diff;
+      masCercano = registro;
+    }
+  });
+
+  return masCercano ? masCercano.personas : null;
+}
+
+// ── Reflejar estado de abandono en la barra "Abandono" del panel ────────
+function marcarAbandono(activo, pct) {
+  const bar = document.getElementById('bar-abandono');
+  if (!bar) return;
+  bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+
+  const fila = bar.closest('.p-row');
+  const val  = fila ? fila.querySelector('.p-val') : null;
+  if (val) val.textContent = pct + '%';
+}
+
 // ── Arranque ───────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
   updateClock();
   setInterval(updateClock, 30000);
   initSliders();
   actualizarBotones();
-  fetchBiblioteca(); // carga inicial + arranca polling al completar
+  fetchBiblioteca();   // carga inicial + arranca polling al completar
+  iniciarPollingPista(); // arranca lectura de conteo de personas (cámara)
 });
 
 console.log('MilongIA panel v0.5 · polling activo · cortina 45s');

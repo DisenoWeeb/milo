@@ -3,7 +3,7 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw5NVX8ICStvL-jp4XvuA21SD0JOLYPoHWuDsalDGZh8bpmoMzuMcPquFxLrZihsdGj/exec';
 
 // ⚠️ Reemplazar por la URL del GAS de Cámara una vez deployado
-const CAMARA_GAS_URL = 'https://script.google.com/macros/s/TU_DEPLOYMENT_ID_CAMARA/exec';
+const CAMARA_GAS_URL = 'https://script.google.com/macros/s/AKfycbxvoJEdKQRpFxGyV_umkuJEV9zr3Tp4D4CM8s1ZDH4VHH-fyz_ukcJFtXHtwX3FDrf96Q/exec';
 
 const CORTINA_DURACION_SEG = 45;    // cortar cortina a los 45 s
 const POLLING_INTERVAL_MS  = 30000; // chequear biblioteca cada 30 s

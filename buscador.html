@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MilongIA · Biblioteca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #111; color: #e8dcc8; font-size: 14px; min-height: 100vh; }
+    .app { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 500; margin-bottom: 0.25rem; }
+    h1 span { color: #c9a84c; }
+    .sub { font-size: 13px; color: rgba(232,220,200,0.5); margin-bottom: 2rem; }
+
+    .card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(232,220,200,0.45); margin-bottom: 0.75rem; }
+
+    label { font-size: 12px; color: rgba(232,220,200,0.6); display: block; margin-bottom: 4px; }
+    input { width: 100%; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.15); border-radius: 8px; color: #e8dcc8; font-size: 13px; padding: 0 12px; height: 38px; font-family: inherit; }
+    input:focus { outline: none; border-color: #c9a84c; }
+    input::placeholder { color: rgba(232,220,200,0.3); }
+
+    .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 160px; }
+
+    button { height: 38px; padding: 0 18px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s; }
+    button:disabled { opacity: 0.35; cursor: not-allowed; }
+    button:not(:disabled):hover { opacity: 0.85; }
+    .btn-gold { background: #c9a84c; color: #1a1209; }
+    .btn-ghost { background: rgba(255,255,255,0.08); color: #e8dcc8; border: 0.5px solid rgba(255,255,255,0.12); }
+    .btn-danger { background: rgba(180,60,60,0.15); color: #e89090; border: 0.5px solid rgba(180,60,60,0.2); }
+    .btn-sm { height: 28px; padding: 0 12px; font-size: 12px; }
+
+    .status { font-size: 12px; color: rgba(232,220,200,0.45); min-height: 18px; margin: 8px 0; }
+    .progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: #c9a84c; border-radius: 2px; transition: width 0.3s; }
+
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid rgba(255,255,255,0.15); background: transparent; color: rgba(232,220,200,0.6); transition: all 0.15s; }
+    .chip:hover { background: rgba(255,255,255,0.06); }
+    .chip.on { background: rgba(201,168,76,0.15); border-color: #c9a84c; color: #c9a84c; }
+
+    .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: rgba(232,220,200,0.45); }
+    .video-list { display: flex; flex-direction: column; gap: 6px; max-height: 500px; overflow-y: auto; padding-right: 4px; }
+    .video-list::-webkit-scrollbar { width: 4px; }
+    .video-list::-webkit-scrollbar-track { background: transparent; }
+    .video-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    .vitem { display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; }
+    .vitem.selected { border-color: rgba(201,168,76,0.4); background: rgba(201,168,76,0.06); }
+    .vthumb { width: 64px; height: 36px; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+    .vinfo { flex: 1; min-width: 0; }
+    .vtitle { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .vmeta { font-size: 11px; color: rgba(232,220,200,0.4); }
+    .vactions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+    .badge-ok { background: rgba(29,158,117,0.2); color: #5dcaa5; }
+    .badge-sel { background: rgba(201,168,76,0.2); color: #c9a84c; }
+    .badge-dur { background: rgba(255,255,255,0.06); color: rgba(232,220,200,0.5); }
+
+    .sel-checkbox { width: 16px; height: 16px; accent-color: #c9a84c; cursor: pointer; flex-shrink: 0; }
+
+    .csv-area { background: rgba(0,0,0,0.3); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: rgba(232,220,200,0.6); max-height: 180px; overflow-y: auto; white-space: pre; margin-top: 10px; }
+
+    .sep { border: none; border-top: 0.5px solid rgba(255,255,255,0.08); margin: 1rem 0; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 8px; margin-bottom: 1rem; }
+    .stat { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 12px; text-align: center; }
+    .stat-val { font-size: 22px; font-weight: 500; color: #c9a84c; }
+    .stat-label { font-size: 11px; color: rgba(232,220,200,0.4); margin-top: 2px; }
+
+    a { color: #c9a84c; text-decoration: none; font-size: 11px; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <h1>Milong<span>IA</span> · Biblioteca</h1>
+  <p class="sub">Cargá videos del canal argentinatangodj y exportalos a Google Sheets</p>
+
+  <!-- API KEY -->
+  <div class="card">
+    <div class="card-title">Configuración</div>
+    <div class="row">
+      <div>
+        <label>YouTube API Key</label>
+        <input id="apikey" type="password" placeholder="AIza...">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn-gold" onclick="guardarKey()">Guardar key</button>
+      </div>
+    </div>
+    <div class="status" id="status-key">Sin API key — <a href="https://console.cloud.google.com/apis/credentials" target="_blank">obtener acá</a></div>
+  </div>
+
+  <!-- CARGAR CANAL -->
+  <div class="card">
+    <div class="card-title">Cargar canal</div>
+    <div class="row">
+      <div>
+        <label>Channel ID</label>
+        <input id="channel-id" value="UCVrk2JXiiLVvTDYWfSiMv5A" placeholder="UCVrk2JXiiLVvTDYWfSiMv5A">
+      </div>
+      <div>
+        <label>Máximo de videos</label>
+        <input id="max-videos" type="number" value="200" min="10" max="500">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn-gold" id="btn-cargar" onclick="cargarCanal()" disabled>Cargar canal</button>
+      </div>
+    </div>
+    <div class="progress-bar" id="prog-bar" style="display:none"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="status" id="status-carga">Guardá la API key para empezar</div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div class="card" id="card-results" style="display:none">
+    <div class="card-title">Videos cargados</div>
+
+    <div class="stats" id="stats-box"></div>
+
+    <div class="filters" id="filters">
+      <span class="chip on" onclick="filtrar(this,'todos')">Todos</span>
+      <span class="chip" onclick="filtrar(this,'Tango')">Tango</span>
+      <span class="chip" onclick="filtrar(this,'Vals')">Vals</span>
+      <span class="chip" onclick="filtrar(this,'Milonga')">Milonga</span>
+    </div>
+
+    <div class="results-header">
+      <span id="results-count">0 videos</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn-ghost btn-sm" onclick="seleccionarTodos()">Seleccionar todos</button>
+        <button class="btn-ghost btn-sm" onclick="deseleccionarTodos()">Deseleccionar</button>
+      </div>
+    </div>
+
+    <div class="video-list" id="video-list"></div>
+  </div>
+
+  <!-- EXPORTAR -->
+  <div class="card" id="card-export" style="display:none">
+    <div class="card-title">Exportar a Google Sheets</div>
+    <div class="row" style="align-items:flex-end">
+      <div>
+        <label>ID inicial en Sheets (último ID que tenés + 1)</label>
+        <input id="start-id" type="number" value="9" min="1">
+      </div>
+      <button class="btn-gold" onclick="generarCSV()">Generar CSV</button>
+      <button class="btn-ghost" onclick="copiarCSV()">Copiar CSV</button>
+      <button class="btn-danger btn-sm" onclick="limpiarTodo()" style="height:38px">Limpiar todo</button>
+    </div>
+    <div class="status" id="status-export"></div>
+    <div class="csv-area" id="csv-area" style="display:none"></div>
+    <p style="font-size:11px;color:rgba(232,220,200,0.35);margin-top:8px">
+      En Sheets: clic en celda vacía → Ctrl+V → aparece un botón "Dividir texto en columnas" → separador: coma
+    </p>
+  </div>
+
+</div>
+
+<script>
+var API_KEY = '';
+var CHANNEL_ID = 'UCVrk2JXiiLVvTDYWfSiMv5A';
+var todosVideos = [];
+var filtroActual = 'todos';
+
+var ESTILOS = {
+  tango: 'Tango', vals: 'Vals', valses: 'Vals', milonga: 'Milonga', milongas: 'Milonga'
+};
+
+function detectarEstilo(titulo) {
+  var t = titulo.toLowerCase();
+  if (t.includes('vals') || t.includes('valse')) return 'Vals';
+  if (t.includes('milonga')) return 'Milonga';
+  if (t.includes('tango') || t.includes('tanda')) return 'Tango';
+  return 'Tango';
+}
+
+function detectarOrquesta(titulo) {
+  var orquestas = ["D'Arienzo","Di Sarli","Troilo","Pugliese","Canaro","Biagi","Calo","Fresedo",
+    "De Angelis","D'Agostino","Varela","Donato","Laurenz","Tanturi","Demare","Gobbi","Rodriguez"];
+  for (var i = 0; i < orquestas.length; i++) {
+    if (titulo.toLowerCase().includes(orquestas[i].toLowerCase())) return orquestas[i];
+  }
+  return '';
+}
+
+function detectarAnio(titulo) {
+  var m = titulo.match(/\b(19[2-9]\d|20[0-2]\d)\b/);
+  return m ? m[1] : '';
+}
+
+function guardarKey() {
+  var k = document.getElementById('apikey').value.trim();
+  if (!k) return;
+  API_KEY = k;
+  document.getElementById('status-key').innerHTML = '✓ API key guardada';
+  document.getElementById('btn-cargar').disabled = false;
+  document.getElementById('status-carga').textContent = 'Listo para cargar el canal';
+}
+
+async function cargarCanal() {
+  var channelId = document.getElementById('channel-id').value.trim();
+  var maxVideos = parseInt(document.getElementById('max-videos').value) || 200;
+  if (!API_KEY || !channelId) return;
+
+  var btn = document.getElementById('btn-cargar');
+  btn.disabled = true; btn.textContent = 'Cargando…';
+  todosVideos = [];
+
+  var progBar = document.getElementById('prog-bar');
+  var progFill = document.getElementById('prog-fill');
+  progBar.style.display = 'block';
+  progFill.style.width = '5%';
+
+  try {
+    // 1. Obtener uploads playlist ID del canal
+    var chanRes = await fetch('https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=' + channelId + '&key=' + API_KEY);
+    var chanData = await chanRes.json();
+    if (chanData.error) throw new Error(chanData.error.message);
+    var uploadsId = chanData.items[0].contentDetails.relatedPlaylists.uploads;
+
+    progFill.style.width = '15%';
+    setStatus('carga', 'Canal encontrado. Cargando videos…');
+
+    // 2. Paginar playlist de uploads
+    var pageToken = '';
+    var cargados = 0;
+    var videoIds = [];
+
+    while (cargados < maxVideos) {
+      var limit = Math.min(50, maxVideos - cargados);
+      var url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=' + limit + '&playlistId=' + uploadsId + '&key=' + API_KEY;
+      if (pageToken) url += '&pageToken=' + pageToken;
+
+      var plRes = await fetch(url);
+      var plData = await plRes.json();
+      if (plData.error) throw new Error(plData.error.message);
+
+      plData.items.forEach(function(item) {
+        videoIds.push(item.snippet.resourceId.videoId);
+        todosVideos.push({
+          vid: item.snippet.resourceId.videoId,
+          titulo: item.snippet.title,
+          thumb: item.snippet.thumbnails.default ? item.snippet.thumbnails.default.url : '',
+          fecha: item.snippet.publishedAt ? item.snippet.publishedAt.slice(0,4) : '',
+          duracion: '',
+          estilo: detectarEstilo(item.snippet.title),
+          orquesta: detectarOrquesta(item.snippet.title),
+          anio: detectarAnio(item.snippet.title),
+          seleccionado: true
+        });
+      });
+
+      cargados += plData.items.length;
+      pageToken = plData.nextPageToken || '';
+      var pct = 15 + Math.round((cargados / maxVideos) * 50);
+      progFill.style.width = pct + '%';
+      setStatus('carga', 'Cargados ' + cargados + ' videos…');
+
+      if (!pageToken || cargados >= maxVideos) break;
+    }
+
+    // 3. Obtener duraciones en lotes de 50
+    setStatus('carga', 'Obteniendo duraciones…');
+    for (var i = 0; i < videoIds.length; i += 50) {
+      var batch = videoIds.slice(i, i + 50).join(',');
+      var detRes = await fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + batch + '&key=' + API_KEY);
+      var detData = await detRes.json();
+      detData.items.forEach(function(item) {
+        var idx = todosVideos.findIndex(function(v){ return v.vid === item.id; });
+        if (idx >= 0) todosVideos[idx].duracion = parseDuracion(item.contentDetails.duration);
+      });
+      var pct2 = 65 + Math.round(((i + 50) / videoIds.length) * 30);
+      progFill.style.width = Math.min(pct2, 95) + '%';
+    }
+
+    progFill.style.width = '100%';
+    setStatus('carga', '✓ ' + todosVideos.length + ' videos cargados del canal');
+    renderResultados();
+
+  } catch(e) {
+    setStatus('carga', 'Error: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Cargar canal';
+    setTimeout(function(){ progBar.style.display = 'none'; }, 1500);
+  }
+}
+
+function parseDuracion(iso) {
+  if (!iso) return '0:00';
+  var m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return '0:00';
+  var h = parseInt(m[1] || 0);
+  var min = parseInt(m[2] || 0) + h * 60;
+  var seg = parseInt(m[3] || 0);
+  return min + ':' + seg.toString().padStart(2, '0');
+}
+
+function renderResultados() {
+  document.getElementById('card-results').style.display = 'block';
+  document.getElementById('card-export').style.display = 'block';
+  actualizarStats();
+  renderLista();
+}
+
+function actualizarStats() {
+  var sel = todosVideos.filter(function(v){ return v.seleccionado; });
+  var tangos = sel.filter(function(v){ return v.estilo === 'Tango'; }).length;
+  var vals = sel.filter(function(v){ return v.estilo === 'Vals'; }).length;
+  var milongas = sel.filter(function(v){ return v.estilo === 'Milonga'; }).length;
+  document.getElementById('stats-box').innerHTML =
+    '<div class="stat"><div class="stat-val">' + sel.length + '</div><div class="stat-label">Seleccionados</div></div>' +
+    '<div class="stat"><div class="stat-val">' + tangos + '</div><div class="stat-label">Tangos</div></div>' +
+    '<div class="stat"><div class="stat-val">' + vals + '</div><div class="stat-label">Vals</div></div>' +
+    '<div class="stat"><div class="stat-val">' + milongas + '</div><div class="stat-label">Milongas</div></div>';
+}
+
+function filtrar(el, f) {
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  filtroActual = f;
+  renderLista();
+}
+
+function renderLista() {
+  var lista = document.getElementById('video-list');
+  var filtrados = filtroActual === 'todos' ? todosVideos : todosVideos.filter(function(v){ return v.estilo === filtroActual; });
+  document.getElementById('results-count').textContent = filtrados.length + ' videos';
+
+  lista.innerHTML = filtrados.map(function(v, i) {
+    var idx = todosVideos.indexOf(v);
+    return '<div class="vitem' + (v.seleccionado ? ' selected' : '') + '" id="vi-' + v.vid + '">' +
+      '<input type="checkbox" class="sel-checkbox" ' + (v.seleccionado ? 'checked' : '') + ' onchange="toggleSel(\'' + v.vid + '\',this.checked)">' +
+      '<img class="vthumb" src="' + v.thumb + '" loading="lazy">' +
+      '<div class="vinfo">' +
+        '<div class="vtitle">' + v.titulo.replace(/</g,'&lt;') + '</div>' +
+        '<div class="vmeta">' + (v.orquesta || '—') + (v.anio ? ' · ' + v.anio : '') + '</div>' +
+      '</div>' +
+      '<div class="vactions">' +
+        '<span class="badge badge-dur">' + (v.duracion || '—') + '</span>' +
+        '<span class="badge ' + (v.estilo === 'Vals' ? 'badge-sel' : v.estilo === 'Milonga' ? 'badge-ok' : 'badge-dur') + '">' + v.estilo + '</span>' +
+        '<a href="https://youtu.be/' + v.vid + '" target="_blank">Ver</a>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleSel(vid, checked) {
+  var v = todosVideos.find(function(v){ return v.vid === vid; });
+  if (v) v.seleccionado = checked;
+  var el = document.getElementById('vi-' + vid);
+  if (el) el.classList.toggle('selected', checked);
+  actualizarStats();
+}
+
+function seleccionarTodos() {
+  var filtrados = filtroActual === 'todos' ? todosVideos : todosVideos.filter(function(v){ return v.estilo === filtroActual; });
+  filtrados.forEach(function(v){ v.seleccionado = true; });
+  renderLista(); actualizarStats();
+}
+
+function deseleccionarTodos() {
+  var filtrados = filtroActual === 'todos' ? todosVideos : todosVideos.filter(function(v){ return v.estilo === filtroActual; });
+  filtrados.forEach(function(v){ v.seleccionado = false; });
+  renderLista(); actualizarStats();
+}
+
+function generarCSV() {
+  var startId = parseInt(document.getElementById('start-id').value) || 9;
+  var sel = todosVideos.filter(function(v){ return v.seleccionado; });
+  if (!sel.length) { setStatus('export', 'No hay videos seleccionados'); return; }
+
+  var header = 'ID,Titulo,Orquesta,Anio,Estilo,Duracion,URL,Activo';
+  var rows = sel.map(function(v, i) {
+    return [
+      startId + i,
+      '"' + v.titulo.replace(/"/g,'""') + '"',
+      '"' + (v.orquesta || '').replace(/"/g,'""') + '"',
+      v.anio || '',
+      v.estilo,
+      v.duracion || '3:00',
+      'https://www.youtube.com/watch?v=' + v.vid,
+      'SI'
+    ].join(',');
+  });
+
+  var csv = header + '\n' + rows.join('\n');
+  document.getElementById('csv-area').textContent = csv;
+  document.getElementById('csv-area').style.display = 'block';
+  setStatus('export', '✓ CSV generado con ' + sel.length + ' temas');
+}
+
+function copiarCSV() {
+  var txt = document.getElementById('csv-area').textContent;
+  if (!txt) { generarCSV(); txt = document.getElementById('csv-area').textContent; }
+  navigator.clipboard.writeText(txt).then(function(){
+    setStatus('export', '✓ Copiado al portapapeles');
+    setTimeout(function(){ setStatus('export', ''); }, 2000);
+  });
+}
+
+function limpiarTodo() {
+  todosVideos = [];
+  document.getElementById('card-results').style.display = 'none';
+  document.getElementById('card-export').style.display = 'none';
+  document.getElementById('csv-area').style.display = 'none';
+  setStatus('carga', 'Listo para cargar de nuevo');
+}
+
+function setStatus(id, msg) {
+  var el = document.getElementById('status-' + id);
+  if (el) el.textContent = msg;
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,4 @@
 
-
 /* MilongIA · camara.js v0.2
    Corre en el celular-soporte. Detecta personas en el frame con COCO-SSD
    (modelo liviano) y manda el conteo al Apps Script de Cámara cada

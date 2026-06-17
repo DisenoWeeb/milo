@@ -1,23 +1,27 @@
-/* El Manijero · camara.js v0.1
+
+
+/* MilongIA · camara.js v0.2
    Corre en el celular-soporte. Detecta personas en el frame con COCO-SSD
-   y manda el conteo al Apps Script de Cámara cada INTERVALO_ENVIO_MS.
+   (modelo liviano) y manda el conteo al Apps Script de Cámara cada
+   INTERVALO_ENVIO_MS. La detección se autoencadena (nunca se pisa).
 */
 
 // ⚠️ Reemplazar por la URL del GAS de Cámara una vez deployado
 const CAMARA_GAS_URL = 'https://script.google.com/macros/s/AKfycbxvoJEdKQRpFxGyV_umkuJEV9zr3Tp4D4CM8s1ZDH4VHH-fyz_ukcJFtXHtwX3FDrf96Q/exec';
 
-const INTERVALO_ENVIO_MS     = 30000; // mandar conteo cada 30s
-const INTERVALO_DETECCION_MS = 1000;  // correr detección cada 1s (promedio antes de mandar)
-const SCORE_MINIMO           = 0.5;   // confianza mínima para contar una detección como "persona"
+const INTERVALO_ENVIO_MS = 30000; // mandar conteo promedio cada 30s
+const SCORE_MINIMO       = 0.5;   // confianza mínima para contar como "persona"
+const RES_ANCHO          = 640;   // resolución reducida → inferencia más rápida
+const RES_ALTO           = 480;
 
-let video        = null;
-let canvas       = null;
-let ctx          = null;
-let modelo       = null;
-let detectando   = false;
-let detectionTimer = null;
+let video          = null;
+let canvas         = null;
+let ctx            = null;
+let modelo         = null;
+let detectando     = false;
 let envioTimer     = null;
-let buffer          = []; // conteos acumulados desde el último envío
+let buffer         = [];  // conteos acumulados desde el último envío
+let ultimaDuracionMs = 0; // para mostrar feedback de performance
 
 // ── Inicio de cámara ────────────────────────────────────────────────────
 async function initCamara() {
@@ -29,7 +33,11 @@ async function initCamara() {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: {
+        facingMode: 'environment',
+        width:  { ideal: RES_ANCHO },
+        height: { ideal: RES_ALTO }
+      },
       audio: false
     });
     video.srcObject = stream;
@@ -45,10 +53,13 @@ async function initCamara() {
   }
 }
 
-// ── Cargar modelo COCO-SSD ──────────────────────────────────────────────
+// ── Cargar modelo COCO-SSD (versión liviana para celulares) ─────────────
 async function cargarModelo() {
   setStatus('Cargando modelo IA…', false);
-  modelo = await cocoSsd.load();
+  // 'lite_mobilenet_v2' es notablemente más rápido que el default
+  // en hardware modesto, a costa de algo de precisión — aceptable
+  // para conteo aproximado de personas.
+  modelo = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
   setStatus('Modelo listo', false);
 }
 
@@ -62,25 +73,42 @@ function toggleDeteccion() {
     btn.classList.add('active');
     setStatus('Detectando…', true);
 
-    detectionTimer = setInterval(correrDeteccion, INTERVALO_DETECCION_MS);
-    envioTimer     = setInterval(enviarConteoPromedio, INTERVALO_ENVIO_MS);
+    loopDeteccion();           // arranca el loop autoencadenado
+    envioTimer = setInterval(enviarConteoPromedio, INTERVALO_ENVIO_MS);
 
   } else {
     detectando = false;
     btn.textContent = 'Iniciar';
     btn.classList.remove('active');
     setStatus('Pausado', false);
-
-    clearInterval(detectionTimer);
     clearInterval(envioTimer);
   }
+}
+
+// ── Loop de detección autoencadenado ────────────────────────────────────
+// En vez de setInterval fijo, cada detección se dispara recién cuando
+// la anterior terminó. Así nunca se solapan, sin importar qué tan
+// lento sea el celular — el "framerate" de detección se autoajusta.
+async function loopDeteccion() {
+  while (detectando) {
+    await correrDeteccion();
+    // pequeño respiro para no saturar el hilo principal entre frames
+    await esperar(50);
+  }
+}
+
+function esperar(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ── Correr una detección sobre el frame actual ──────────────────────────
 async function correrDeteccion() {
   if (!modelo || !video.videoWidth) return;
 
+  const t0 = performance.now();
   const predicciones = await modelo.detect(video);
+  ultimaDuracionMs = performance.now() - t0;
+
   const personas = predicciones.filter(function (p) {
     return p.class === 'person' && p.score >= SCORE_MINIMO;
   });
@@ -89,6 +117,7 @@ async function correrDeteccion() {
   buffer.push(personas.length);
 
   document.getElementById('count-val').textContent = personas.length;
+  actualizarPerf();
 }
 
 // ── Dibujar cajas sobre las personas detectadas (feedback visual) ───────
@@ -96,12 +125,13 @@ function dibujarDetecciones(personas) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = '#E8B86D';
   ctx.lineWidth   = 2;
-  ctx.font        = '14px Inter';
+  ctx.font        = '13px Inter';
   ctx.fillStyle   = '#E8B86D';
 
   personas.forEach(function (p) {
     const [x, y, w, h] = p.bbox;
     ctx.strokeRect(x, y, w, h);
+    ctx.fillText(Math.round(p.score * 100) + '%', x + 4, y + 14);
   });
 }
 
@@ -121,7 +151,7 @@ async function enviarConteoPromedio() {
     const data = await res.json();
 
     if (data.ok) {
-      setSyncInfo('Última sincronización: ' + new Date().toLocaleTimeString(), false);
+      setSyncInfo('Última sincronización: ' + new Date().toLocaleTimeString() + ' · ' + promedio + ' personas', false);
     } else {
       setSyncInfo('Error al sincronizar: ' + (data.error || 'desconocido'), true);
     }
@@ -144,6 +174,11 @@ function setSyncInfo(texto, esError) {
   el.classList.toggle('error', !!esError);
 }
 
+function actualizarPerf() {
+  const el = document.getElementById('perf-info');
+  if (el) el.textContent = Math.round(ultimaDuracionMs) + ' ms/frame';
+}
+
 // ── Arranque ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function () {
   await initCamara();
@@ -162,4 +197,5 @@ async function mantenerPantallaActiva() {
 }
 document.addEventListener('DOMContentLoaded', mantenerPantallaActiva);
 
-console.log('MilongIA Cámara v0.1 · listo');
+console.log('MilongIA Cámara v0.2 · loop autoencadenado · modelo liviano');
+

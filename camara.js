@@ -1,4 +1,4 @@
-/* MilongIA · camara.js v0.1
+/* El Manijero · camara.js v0.1
    Corre en el celular-soporte. Detecta personas en el frame con COCO-SSD
    y manda el conteo al Apps Script de Cámara cada INTERVALO_ENVIO_MS.
 */

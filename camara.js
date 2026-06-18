@@ -125,21 +125,31 @@ function dibujarDetecciones(predicciones, resultado) {
       ctx.strokeRect(x, y, w, h);
     });
 
-  // Resumen de parejas en esquina inferior izquierda
-  ctx.fillStyle = 'rgba(13,9,4,0.75)';
-  ctx.fillRect(8, canvas.height - 36, 220, 28);
+  // Resumen de parejas — centrado en la parte inferior del canvas
+  const texto  = resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos';
+  ctx.font     = '13px Inter';
+  const ancho  = ctx.measureText(texto).width + 24;
+  const xRect  = (canvas.width - ancho) / 2;
+  const yRect  = canvas.height - 44;
+  ctx.fillStyle = 'rgba(13,9,4,0.8)';
+  ctx.beginPath();
+  ctx.roundRect(xRect, yRect, ancho, 28, 8);
+  ctx.fill();
   ctx.fillStyle = '#E8B86D';
-  ctx.font      = '13px Inter';
-  ctx.fillText(
-    resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos',
-    14, canvas.height - 17
-  );
+  ctx.fillText(texto, xRect + 12, yRect + 19);
 }
 
 // ── Actualizar indicador de performance ─────────────────────────────────
 function actualizarPerf(resultado) {
-  const el = document.getElementById('perf-info');
-  if (el) el.textContent =
+  // ms/frame va al overlay superior que siempre es visible
+  const statusEl = document.getElementById('status-text');
+  if (statusEl) statusEl.textContent =
+    'Detectando · ' + Math.round(ultimaDuracionMs) + 'ms · ' +
+    resultado.totalTracks + ' tracks';
+
+  // perf-info abajo como fallback si existe
+  const perfEl = document.getElementById('perf-info');
+  if (perfEl) perfEl.textContent =
     Math.round(ultimaDuracionMs) + ' ms/frame · ' +
     resultado.totalTracks + ' tracks activos';
 }

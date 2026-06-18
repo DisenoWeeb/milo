@@ -1,7 +1,6 @@
-
-/* MilongIA · camara.js v0.2
-   Corre en el celular-soporte. Detecta personas en el frame con COCO-SSD
-   (modelo liviano) y manda el conteo al Apps Script de Cámara cada
+/* MilongIA · camara.js v0.3
+   Corre en el celular-soporte. Detecta personas con COCO-SSD (modelo liviano),
+   pasa las detecciones al tracker (tracking.js) y manda el conteo al GAS cada
    INTERVALO_ENVIO_MS. La detección se autoencadena (nunca se pisa).
 */
 
@@ -13,14 +12,14 @@ const SCORE_MINIMO       = 0.5;   // confianza mínima para contar como "persona
 const RES_ANCHO          = 640;   // resolución reducida → inferencia más rápida
 const RES_ALTO           = 480;
 
-let video          = null;
-let canvas         = null;
-let ctx            = null;
-let modelo         = null;
-let detectando     = false;
-let envioTimer     = null;
-let buffer         = [];  // conteos acumulados desde el último envío
-let ultimaDuracionMs = 0; // para mostrar feedback de performance
+let video            = null;
+let canvas           = null;
+let ctx              = null;
+let modelo           = null;
+let detectando       = false;
+let envioTimer       = null;
+let buffer           = [];   // conteos acumulados desde el último envío
+let ultimaDuracionMs = 0;    // para mostrar feedback de performance
 
 // ── Inicio de cámara ────────────────────────────────────────────────────
 async function initCamara() {
@@ -52,12 +51,9 @@ async function initCamara() {
   }
 }
 
-// ── Cargar modelo COCO-SSD (versión liviana para celulares) ─────────────
+// ── Cargar modelo COCO-SSD liviano ──────────────────────────────────────
 async function cargarModelo() {
   setStatus('Cargando modelo IA…', false);
-  // 'lite_mobilenet_v2' es notablemente más rápido que el default
-  // en hardware modesto, a costa de algo de precisión — aceptable
-  // para conteo aproximado de personas.
   modelo = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
   setStatus('Modelo listo', false);
 }
@@ -67,13 +63,13 @@ function toggleDeteccion() {
   const btn = document.getElementById('btn-toggle');
 
   if (!detectando) {
-    resetTracking();
+    resetTracking();          // limpiar tracks del run anterior
     detectando = true;
     btn.textContent = 'Detener';
     btn.classList.add('active');
     setStatus('Detectando…', true);
 
-    loopDeteccion();           // arranca el loop autoencadenado
+    loopDeteccion();
     envioTimer = setInterval(enviarConteoPromedio, INTERVALO_ENVIO_MS);
 
   } else {
@@ -86,14 +82,10 @@ function toggleDeteccion() {
 }
 
 // ── Loop de detección autoencadenado ────────────────────────────────────
-// En vez de setInterval fijo, cada detección se dispara recién cuando
-// la anterior terminó. Así nunca se solapan, sin importar qué tan
-// lento sea el celular — el "framerate" de detección se autoajusta.
 async function loopDeteccion() {
   while (detectando) {
     await correrDeteccion();
-    // pequeño respiro para no saturar el hilo principal entre frames
-    await esperar(50);
+    await esperar(50); // respiro entre frames
   }
 }
 
@@ -105,12 +97,11 @@ function esperar(ms) {
 async function correrDeteccion() {
   if (!modelo || !video.videoWidth) return;
 
-  const t0 = performance.now();
+  const t0           = performance.now();
   const predicciones = await modelo.detect(video);
-  ultimaDuracionMs = performance.now() - t0;
+  ultimaDuracionMs   = performance.now() - t0;
 
-  // ← antes: contaba personas directas
-  // ← ahora: pasa las detecciones al tracker
+  // Pasar detecciones al tracker → obtener conteo de parejas bailando
   const resultado = procesarFrame(predicciones);
 
   dibujarDetecciones(predicciones, resultado);
@@ -120,14 +111,13 @@ async function correrDeteccion() {
   actualizarPerf(resultado);
 }
 
-// ── Dibujar cajas sobre las personas detectadas (feedback visual) ───────
+// ── Dibujar cajas + resumen en el canvas ────────────────────────────────
 function dibujarDetecciones(predicciones, resultado) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = '#E8B86D';
-  ctx.lineWidth = 2;
-  ctx.font = '12px Inter';
-  ctx.fillStyle = '#E8B86D';
 
+  // Cajas doradas sobre cada persona detectada
+  ctx.strokeStyle = '#E8B86D';
+  ctx.lineWidth   = 2;
   predicciones
     .filter(p => p.class === 'person' && p.score >= SCORE_MINIMO)
     .forEach(p => {
@@ -135,17 +125,18 @@ function dibujarDetecciones(predicciones, resultado) {
       ctx.strokeRect(x, y, w, h);
     });
 
-  // Mostrar conteo de parejas en el canvas
-  ctx.fillStyle = 'rgba(13,9,4,0.7)';
-  ctx.fillRect(8, canvas.height - 36, 200, 28);
+  // Resumen de parejas en esquina inferior izquierda
+  ctx.fillStyle = 'rgba(13,9,4,0.75)';
+  ctx.fillRect(8, canvas.height - 36, 220, 28);
   ctx.fillStyle = '#E8B86D';
-  ctx.font = '13px Inter';
+  ctx.font      = '13px Inter';
   ctx.fillText(
     resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos',
     14, canvas.height - 17
   );
 }
 
+// ── Actualizar indicador de performance ─────────────────────────────────
 function actualizarPerf(resultado) {
   const el = document.getElementById('perf-info');
   if (el) el.textContent =
@@ -158,13 +149,13 @@ async function enviarConteoPromedio() {
   if (!buffer.length) return;
 
   const promedio = Math.round(buffer.reduce((a, b) => a + b, 0) / buffer.length);
-  buffer = []; // reset para el próximo intervalo
+  buffer = [];
 
   try {
     const res = await fetch(CAMARA_GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS en GAS
-      body: JSON.stringify({ personas: promedio })
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    JSON.stringify({ personas: promedio })
     });
     const data = await res.json();
 
@@ -182,8 +173,7 @@ async function enviarConteoPromedio() {
 // ── Helpers UI ────────────────────────────────────────────────────────
 function setStatus(texto, activo) {
   document.getElementById('status-text').textContent = texto;
-  const dot = document.getElementById('status-dot');
-  dot.classList.toggle('live', activo);
+  document.getElementById('status-dot').classList.toggle('live', activo);
 }
 
 function setSyncInfo(texto, esError) {
@@ -192,28 +182,20 @@ function setSyncInfo(texto, esError) {
   el.classList.toggle('error', !!esError);
 }
 
-function actualizarPerf() {
-  const el = document.getElementById('perf-info');
-  if (el) el.textContent = Math.round(ultimaDuracionMs) + ' ms/frame';
-}
-
-// ── Arranque ─────────────────────────────────────────────────────────
+// ── Arranque ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function () {
   await initCamara();
   await cargarModelo();
 });
 
-// ── Evitar que la pantalla se apague (si el navegador lo soporta) ──────
+// ── Evitar que la pantalla se apague ─────────────────────────────────
 async function mantenerPantallaActiva() {
   try {
-    if ('wakeLock' in navigator) {
-      await navigator.wakeLock.request('screen');
-    }
+    if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
   } catch (err) {
     console.warn('Wake Lock no disponible:', err);
   }
 }
 document.addEventListener('DOMContentLoaded', mantenerPantallaActiva);
 
-console.log('MilongIA Cámara v0.2 · loop autoencadenado · modelo liviano');
-
+console.log('MilongIA Cámara v0.3 · tracking activo · modelo liviano');

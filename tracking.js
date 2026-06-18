@@ -11,7 +11,7 @@ const TRACK_DIST_MAX_ASOCIAR    = 120;  // px máx. para considerar "mismo cuerp
 const TRACK_FRAMES_SIN_VER_MAX  = 12;   // ~3 segundos a 4fps antes de eliminar track
 const MOVIMIENTO_MIN_PX_TOTAL   = 30;   // px totales en HISTORIAL_SEGUNDOS para confirmar "está bailando"
 const PAREJA_DIST_MAX           = 150;  // px máx. entre centros para considerar "pareja"
-const SCORE_MINIMO              = 0.45; // un poco más tolerante que antes
+
 
 let proximoId = 1;
 let tracks    = [];
@@ -22,7 +22,7 @@ let tracks    = [];
 // Devuelve: { personasEnPista, parejas, sueltosConMovimiento, totalTracks, tracksActivos }
 function procesarFrame(detecciones) {
   const ahora   = performance.now();
-  const personas = detecciones.filter(d => d.class === 'person' && d.score >= SCORE_MINIMO);
+  const personas = detecciones.filter(d => d.class === 'person' && d.score >= 0.45);
   const centros  = personas.map(p => centroDeBbox(p.bbox));
 
   asociarDetecciones(centros, ahora);

@@ -105,32 +105,46 @@ async function correrDeteccion() {
   const resultado = procesarFrame(predicciones);
 
   dibujarDetecciones(predicciones, resultado);
-  buffer.push(resultado.personasEnPista);
+  buffer.push({
+    personas: resultado.personasEnPista,
+    parejas:  resultado.parejas,
+    solos:    resultado.sueltosConMovimiento
+  });
 
   document.getElementById('count-val').textContent = resultado.personasEnPista;
   actualizarPerf(resultado);
 }
 
-// ── Dibujar cajas + resumen en el canvas ────────────────────────────────
+// ── Dibujar tracks con color + estado + resumen ──────────────────────────
 function dibujarDetecciones(predicciones, resultado) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Cajas doradas sobre cada persona detectada
-  ctx.strokeStyle = '#E8B86D';
-  ctx.lineWidth   = 2;
-  predicciones
-    .filter(p => p.class === 'person' && p.score >= SCORE_MINIMO)
-    .forEach(p => {
-      const [x, y, w, h] = p.bbox;
-      ctx.strokeRect(x, y, w, h);
-    });
+  // Dibujar cada track con su color y estado (bailando ♪ / quieto —)
+  if (resultado.tracksActivos && resultado.tracksActivos.length) {
+    resultado.tracksActivos.forEach(function (track) {
+      const c        = track.centro;
+      const bailando = track.historial.length >= 2 &&
+        track.historial.reduce(function (acc, h, i) {
+          if (i === 0) return acc;
+          return acc + Math.hypot(h.x - track.historial[i-1].x, h.y - track.historial[i-1].y);
+        }, 0) >= 30; // mismo umbral que tracking.js MOVIMIENTO_MIN_PX_TOTAL
 
-  // Resumen de parejas — centrado en la parte inferior del canvas
-  const texto  = resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos';
-  ctx.font     = '13px Inter';
-  const ancho  = ctx.measureText(texto).width + 24;
-  const xRect  = (canvas.width - ancho) / 2;
-  const yRect  = canvas.height - 44;
+      ctx.strokeStyle = track.color || '#E8B86D';
+      ctx.lineWidth   = bailando ? 3 : 1;
+      ctx.strokeRect(c.x - 40, c.y - 60, 80, 120);
+
+      ctx.fillStyle = track.color || '#E8B86D';
+      ctx.font      = '11px Inter';
+      ctx.fillText('#' + track.id + (bailando ? ' ♪' : ' —'), c.x - 38, c.y - 65);
+    });
+  }
+
+  // Resumen centrado en la parte inferior
+  const texto = resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos';
+  ctx.font    = '13px Inter';
+  const ancho = ctx.measureText(texto).width + 24;
+  const xRect = (canvas.width - ancho) / 2;
+  const yRect = canvas.height - 44;
   ctx.fillStyle = 'rgba(13,9,4,0.8)';
   ctx.beginPath();
   ctx.roundRect(xRect, yRect, ancho, 28, 8);
@@ -158,21 +172,27 @@ function actualizarPerf(resultado) {
 async function enviarConteoPromedio() {
   if (!buffer.length) return;
 
-  const promedio = Math.round(buffer.reduce((a, b) => a + b, 0) / buffer.length);
+  const promPersonas = Math.round(buffer.reduce((a, b) => a + b.personas, 0) / buffer.length);
+  const promParejas  = Math.round(buffer.reduce((a, b) => a + b.parejas,  0) / buffer.length);
+  const promSolos    = Math.round(buffer.reduce((a, b) => a + b.solos,    0) / buffer.length);
   buffer = [];
 
   try {
     const res = await fetch(CAMARA_GAS_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body:    JSON.stringify({ personas: promedio })
+      body:    JSON.stringify({
+        personas: promPersonas,
+        parejas:  promParejas,
+        solos:    promSolos
+      })
     });
     const data = await res.json();
 
     if (data.ok) {
-      setSyncInfo('Última sincronización: ' + new Date().toLocaleTimeString() + ' · ' + promedio + ' personas', false);
+      setSyncInfo('Sync ' + new Date().toLocaleTimeString() + ' · ' + promPersonas + ' en pista (' + promParejas + ' parejas)', false);
     } else {
-      setSyncInfo('Error al sincronizar: ' + (data.error || 'desconocido'), true);
+      setSyncInfo('Error: ' + (data.error || 'desconocido'), true);
     }
   } catch (err) {
     console.error('Error enviando conteo:', err);

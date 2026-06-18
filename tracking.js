@@ -1,5 +1,5 @@
 
-/* MilongIA · tracking.js v0.1
+/* MilongIA · tracking.js v0.1 -
    Tracker liviano de cuerpos entre frames + detección de parejas bailando
    por proximidad y movimiento correlacionado.
 

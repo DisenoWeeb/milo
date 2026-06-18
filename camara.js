@@ -67,6 +67,7 @@ function toggleDeteccion() {
   const btn = document.getElementById('btn-toggle');
 
   if (!detectando) {
+    resetTracking();
     detectando = true;
     btn.textContent = 'Detener';
     btn.classList.add('active');
@@ -108,30 +109,48 @@ async function correrDeteccion() {
   const predicciones = await modelo.detect(video);
   ultimaDuracionMs = performance.now() - t0;
 
-  const personas = predicciones.filter(function (p) {
-    return p.class === 'person' && p.score >= SCORE_MINIMO;
-  });
+  // ← antes: contaba personas directas
+  // ← ahora: pasa las detecciones al tracker
+  const resultado = procesarFrame(predicciones);
 
-  dibujarDetecciones(personas);
-  buffer.push(personas.length);
+  dibujarDetecciones(predicciones, resultado);
+  buffer.push(resultado.personasEnPista);
 
-  document.getElementById('count-val').textContent = personas.length;
-  actualizarPerf();
+  document.getElementById('count-val').textContent = resultado.personasEnPista;
+  actualizarPerf(resultado);
 }
 
 // ── Dibujar cajas sobre las personas detectadas (feedback visual) ───────
-function dibujarDetecciones(personas) {
+function dibujarDetecciones(predicciones, resultado) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = '#E8B86D';
-  ctx.lineWidth   = 2;
-  ctx.font        = '13px Inter';
-  ctx.fillStyle   = '#E8B86D';
+  ctx.lineWidth = 2;
+  ctx.font = '12px Inter';
+  ctx.fillStyle = '#E8B86D';
 
-  personas.forEach(function (p) {
-    const [x, y, w, h] = p.bbox;
-    ctx.strokeRect(x, y, w, h);
-    ctx.fillText(Math.round(p.score * 100) + '%', x + 4, y + 14);
-  });
+  predicciones
+    .filter(p => p.class === 'person' && p.score >= SCORE_MINIMO)
+    .forEach(p => {
+      const [x, y, w, h] = p.bbox;
+      ctx.strokeRect(x, y, w, h);
+    });
+
+  // Mostrar conteo de parejas en el canvas
+  ctx.fillStyle = 'rgba(13,9,4,0.7)';
+  ctx.fillRect(8, canvas.height - 36, 200, 28);
+  ctx.fillStyle = '#E8B86D';
+  ctx.font = '13px Inter';
+  ctx.fillText(
+    resultado.parejas + ' parejas · ' + resultado.sueltosConMovimiento + ' solos',
+    14, canvas.height - 17
+  );
+}
+
+function actualizarPerf(resultado) {
+  const el = document.getElementById('perf-info');
+  if (el) el.textContent =
+    Math.round(ultimaDuracionMs) + ' ms/frame · ' +
+    resultado.totalTracks + ' tracks activos';
 }
 
 // ── Promediar el buffer y enviar al GAS ─────────────────────────────────

@@ -72,7 +72,7 @@ html, body {
   background-position: center;
   background-attachment: fixed;
   /* Overlay oscuro sobre la foto para mantener legibilidad */
-  filter: brightness(0.35) saturate(0.7);
+  filter: brightness(0.65) saturate(0.85);
   pointer-events: none;
 }
 /* Segunda capa de oscurecimiento gradiente */
@@ -82,9 +82,9 @@ html, body {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(10, 8, 6, 0.75) 0%,
-    rgba(10, 8, 6, 0.55) 40%,
-    rgba(10, 8, 6, 0.75) 100%
+    rgba(10, 8, 6, 0.55) 0%,
+rgba(10, 8, 6, 0.35) 40%,
+rgba(10, 8, 6, 0.55) 100%
   );
   pointer-events: none;
 }
@@ -320,8 +320,8 @@ html, body {
   border-radius: 10px;
   padding: 1rem 1.1rem;
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(6px);
+-webkit-backdrop-filter: blur(6px);
   position: relative;
   overflow: hidden;
 }

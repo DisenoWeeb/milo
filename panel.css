@@ -1,3 +1,7 @@
+
+
+
+
 /* ═══════════════════════════════════════════════════════════════════════════
    El Manijero · panel.css v1.1 · Cabaret Porteño
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -931,3 +935,66 @@ html, body {
   .album-art, .album-placeholder { width: 64px; height: 64px; }
   .gauges-grid { grid-template-columns: repeat(2, 1fr); }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT GRID — PC y Mobile
+   ═══════════════════════════════════════════════════════════════════════════
+
+   PC (≥900px):
+   ┌──────────────────────────┬──────────────┬──────────────┐
+   │  SONANDO AHORA (2 rows)  │  TANDA       │  AUDIO IA    │
+   │                          ├──────────────┤  (2 rows)    │
+   │                          │  PRÓXIMA     │              │
+   ├──────────────────────────┴──────────────┤              │
+   │  PISTA EN VIVO           │  COPILOTO    │              │
+   └──────────────────────────┴──────────────┴──────────────┘
+
+   Mobile: apilado en orden 1→6
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr 0.75fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "now   tanda  audio"
+    "now   prox   audio"
+    "pista copil  audio";
+  gap: 0.75rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.area-now     { grid-area: now; }
+.area-tanda   { grid-area: tanda; }
+.area-proxima { grid-area: prox; }
+.area-audio   { grid-area: audio; }
+.area-copiloto{ grid-area: copil; }
+.area-pista   { grid-area: pista; }
+
+/* ── Tablet (2 columnas) ─────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .layout-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "now    tanda"
+      "now    prox"
+      "audio  copil"
+      "pista  pista";
+  }
+}
+
+/* ── Mobile (1 columna, orden 1→6) ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .layout-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .area-now      { order: 1; }
+  .area-tanda    { order: 2; }
+  .area-proxima  { order: 3; }
+  .area-audio    { order: 4; }
+  .area-copiloto { order: 5; }
+  .area-pista    { order: 6; }
+}
+

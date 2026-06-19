@@ -195,16 +195,26 @@
 
         <div class="gauges-grid">
           <div class="gauge-item">
-            <svg class="gauge-svg" viewBox="0 0 80 80" aria-hidden="true">
-              <circle class="gauge-bg" cx="40" cy="40" r="30" />
-              <circle class="gauge-fill gauge-energia" cx="40" cy="40" r="30" id="g-energia-fill" />
-            </svg>
-            <div class="gauge-icon">🔥</div>
-            <div class="gauge-val" id="g-energia">—</div>
-            <div class="gauge-label">ENERGÍA</div>
+            <div class="gauge-header">🔥 ENERGÍA</div>
+            <div class="gauge-canvas-wrap">
+              <canvas id="gauge-energia" class="gauge-arc-canvas" width="90" height="58" aria-hidden="true"></canvas>
+              <div class="gauge-center-text">
+                <div class="gauge-val" id="g-energia">—</div>
+              </div>
+            </div>
             <div class="gauge-sub" id="g-energia-sub">—</div>
           </div>
           <div class="gauge-item">
+            <div class="gauge-header">👥 DENSIDAD</div>
+            <div class="gauge-canvas-wrap">
+              <canvas id="gauge-densidad" class="gauge-arc-canvas" width="90" height="58" aria-hidden="true"></canvas>
+              <div class="gauge-center-text">
+                <div class="gauge-val" id="g-densidad">—</div>
+              </div>
+            </div>
+            <div class="gauge-sub" id="g-densidad-sub">—</div>
+          </div>
+          <!-- dummy replaced below --><div class="gauge-item" style="display:none">
             <svg class="gauge-svg" viewBox="0 0 80 80" aria-hidden="true">
               <circle class="gauge-bg" cx="40" cy="40" r="30" />
               <circle class="gauge-fill gauge-densidad" cx="40" cy="40" r="30" id="g-densidad-fill" />

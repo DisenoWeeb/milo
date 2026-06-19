@@ -140,7 +140,7 @@ html, body {
     .topbar-center {
         grid-column: 1 / -1;
         grid-row: 2;
-        text-align: left;
+        text-align: center;
     }
 .evento-nombre {
   font-family: 'Oswald', sans-serif;

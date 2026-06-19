@@ -136,6 +136,12 @@ html, body {
 }
 
 .topbar-center { text-align: center; min-width: 0; }
+@media (max-width: 768px) {
+    .topbar-center {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        text-align: left;
+    }
 .evento-nombre {
   font-family: 'Oswald', sans-serif;
   font-size: 13px;

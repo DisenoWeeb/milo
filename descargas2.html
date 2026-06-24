@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TodoTango Biblioteca</title>
+    <title>TodoTango Downloader</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -14,10 +13,9 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { text-align: center; margin-bottom: 5px; color: #e94560; font-size: 2.2em; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 5px; color: #e94560; }
         .subtitle { text-align: center; color: #aaa; margin-bottom: 25px; }
-        
         .panel {
             background: rgba(255,255,255,0.05);
             border-radius: 15px;
@@ -25,99 +23,63 @@
             margin-bottom: 20px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        /* Filtro alfabético */
-        .alphabet-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        .alphabet-filter button {
-            width: 36px; height: 36px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: #ccc;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .alphabet-filter button:hover, .alphabet-filter button.active {
-            background: #e94560;
-            color: #fff;
-            border-color: #e94560;
-        }
-        
-        /* Filtro por género */
-        .genre-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        .genre-filter button {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: #ccc;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        .genre-filter button:hover, .genre-filter button.active {
-            background: #4ecca3;
-            color: #1a1a2e;
-            border-color: #4ecca3;
-            font-weight: bold;
-        }
-        
-        .search-box {
-            width: 100%;
-            padding: 12px 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        .search-box::placeholder { color: #888; }
-        
-        .controls {
+        .input-group {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
-        .controls button {
-            padding: 10px 20px;
+        input[type="number"], input[type="text"] {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+        input::placeholder { color: #888; }
+        button {
+            padding: 12px 25px;
             border: none;
             border-radius: 8px;
             background: #e94560;
             color: #fff;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 14px;
             transition: all 0.3s;
         }
-        .controls button:hover { background: #ff6b6b; transform: translateY(-2px); }
-        .controls button:disabled { background: #555; cursor: not-allowed; transform: none; }
-        .controls button.secondary {
+        button:hover { background: #ff6b6b; transform: translateY(-2px); }
+        button:disabled { background: #555; cursor: not-allowed; transform: none; }
+        .btn-scan { background: #4ecca3; color: #1a1a2e; }
+        .btn-scan:hover { background: #3dbb94; }
+        .btn-secondary {
             background: rgba(255,255,255,0.1);
+            font-size: 14px;
+            padding: 8px 16px;
         }
-        .controls button.secondary:hover { background: rgba(255,255,255,0.2); }
-        
-        .stats-bar {
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .log .success { color: #4ecca3; }
+        .log .error { color: #e94560; }
+        .log .info { color: #f0a500; }
+        .log .scan { color: #00d4ff; }
+        .stats {
             display: flex;
             justify-content: space-around;
+            margin-top: 15px;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 15px;
         }
         .stat {
             text-align: center;
@@ -125,9 +87,8 @@
             background: rgba(255,255,255,0.05);
             border-radius: 10px;
         }
-        .stat-number { font-size: 24px; font-weight: bold; color: #e94560; }
+        .stat-number { font-size: 28px; font-weight: bold; color: #e94560; }
         .stat-label { color: #aaa; font-size: 12px; }
-        
         .progress-bar {
             width: 100%; height: 8px;
             background: rgba(255,255,255,0.1);
@@ -142,588 +103,205 @@
             transition: width 0.3s;
             width: 0%;
         }
-        
-        /* Lista de canciones */
-        .songs-list {
-            max-height: 500px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            padding: 10px;
-        }
-        .song-item {
+        .controls {
             display: flex;
-            align-items: center;
-            padding: 10px 15px;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .note {
+            color: #888;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .results-table th {
+            background: rgba(233, 69, 96, 0.2);
+            padding: 10px;
+            text-align: left;
+            color: #e94560;
+        }
+        .results-table td {
+            padding: 8px 10px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
-            border-radius: 8px;
         }
-        .song-item:hover {
-            background: rgba(255,255,255,0.05);
+        .results-table tr:hover td {
+            background: rgba(255,255,255,0.03);
         }
-        .song-checkbox {
-            margin-right: 12px;
-            width: 18px; height: 18px;
-            cursor: pointer;
+        .results-table a {
+            color: #00d4ff;
+            text-decoration: none;
         }
-        .song-info {
-            flex: 1;
+        .results-table a:hover {
+            text-decoration: underline;
         }
-        .song-title {
-            font-size: 15px;
-            color: #fff;
-            margin-bottom: 2px;
-        }
-        .song-genre {
-            font-size: 12px;
-            color: #4ecca3;
-            background: rgba(78, 204, 163, 0.1);
+        .badge {
+            display: inline-block;
             padding: 2px 8px;
             border-radius: 10px;
-            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
         }
-        .song-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .song-actions button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(233, 69, 96, 0.2);
-            color: #e94560;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .song-actions button:hover {
-            background: #e94560;
-            color: #fff;
-        }
-        .song-actions button.play-btn {
+        .badge-found {
             background: rgba(78, 204, 163, 0.2);
             color: #4ecca3;
         }
-        .song-actions button.play-btn:hover {
-            background: #4ecca3;
-            color: #1a1a2e;
+        .badge-missing {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
         }
-        
-        .log {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            height: 200px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-            margin-top: 15px;
-        }
-        .log .success { color: #4ecca3; }
-        .log .error { color: #e94560; }
-        .log .info { color: #f0a500; }
-        .log .scan { color: #00d4ff; }
-        
-        .select-all-bar {
+        .tab-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .select-all-bar label {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        
-        .folder-tip {
-            background: rgba(78, 204, 163, 0.1);
-            border: 1px solid rgba(78, 204, 163, 0.3);
-            border-radius: 10px;
-            padding: 15px;
+            gap: 5px;
             margin-bottom: 15px;
-            color: #4ecca3;
-            font-size: 13px;
         }
-        .folder-tip strong { color: #fff; }
-        .folder-tip a { color: #00d4ff; }
-        
-        .hidden { display: none; }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: #aaa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            border-color: #e94560;
+            color: #fff;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .download-link {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e94560;
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .download-link:hover {
+            background: #ff6b6b;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 TodoTango Biblioteca</h1>
-        <p class="subtitle">Descarga organizada por género y alfabeto</p>
-        
-        <div class="folder-tip">
-            <strong>💡 Para organizar tus descargas:</strong><br>
-            Crea una carpeta "Biblioteca de Tango" en tu computadora y configura tu navegador para descargar ahí:<br>
-            • <strong>Chrome:</strong> <code>chrome://settings/downloads</code> → Cambiar ubicación<br>
-            • <strong>Firefox:</strong> Preferencias → Descargas → Preguntar siempre dónde guardar<br>
-            Los archivos se nombran con el título real de la canción.
-        </div>
-        
+        <h1>🎵 TodoTango Downloader</h1>
+        <p class="subtitle">Descubre y descarga canciones de todotango.com</p>
+
         <div class="panel">
-            <h3 style="margin-bottom:10px; color:#00d4ff;">🔤 Filtrar por letra:</h3>
-            <div class="alphabet-filter" id="alphabetFilter"></div>
-            
-            <h3 style="margin:15px 0 10px; color:#4ecca3;">🎼 Filtrar por género:</h3>
-            <div class="genre-filter" id="genreFilter"></div>
-            
-            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar por título...">
-            
-            <div class="controls">
-                <button onclick="selectAllVisible()">☑ Seleccionar visibles</button>
-                <button onclick="deselectAll()">☐ Deseleccionar todo</button>
-                <button onclick="downloadSelected()">⬇ Descargar seleccionadas</button>
-                <button onclick="exportSelectedList()" class="secondary">📋 Exportar lista</button>
-                <button onclick="stopDownload()" id="btnStop" disabled class="secondary">⏹ Detener</button>
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="setTab('scanner')">🔍 Escáner de IDs</button>
+                <button class="tab-btn" onclick="setTab('downloader')">⬇ Descargar por ID</button>
+                <button class="tab-btn" onclick="setTab('results')">📊 Resultados</button>
             </div>
-            
-            <div class="stats-bar">
+
+            <!-- TAB: ESCANER -->
+            <div class="tab-content active" id="tab-scanner">
+                <h3 style="margin-bottom:10px; color:#4ecca3;">Escáner de rangos</h3>
+                <p style="color:#aaa; margin-bottom:15px; font-size:14px;">
+                    Prueba un rango de IDs para descubrir cuáles canciones existen. 
+                    Las que funcionen se guardarán en la pestaña "Resultados".
+                </p>
+                <div class="input-group">
+                    <input type="number" id="scanStart" placeholder="ID inicial" value="2020" min="1">
+                    <input type="number" id="scanEnd" placeholder="ID final" value="2050" min="1">
+                    <button class="btn-scan" onclick="startScan()">🔍 Escanear</button>
+                    <button class="btn-secondary" onclick="stopScan()" id="btnStopScan" disabled>⏹ Detener</button>
+                </div>
+                <div class="controls">
+                    <button class="btn-secondary" onclick="quickScan(2000, 2100)">Rápido: 2000-2100</button>
+                    <button class="btn-secondary" onclick="quickScan(1, 100)">Rápido: 1-100</button>
+                    <button class="btn-secondary" onclick="quickScan(1000, 1100)">Rápido: 1000-1100</button>
+                    <button class="btn-secondary" onclick="quickScan(3000, 3100)">Rápido: 3000-3100</button>
+                </div>
+            </div>
+
+            <!-- TAB: DOWNLOADER -->
+            <div class="tab-content" id="tab-downloader">
+                <h3 style="margin-bottom:10px; color:#e94560;">Descargar canciones específicas</h3>
+                <p style="color:#aaa; margin-bottom:15px; font-size:14px;">
+                    Ingresa los IDs que sabes que funcionan (separados por coma) o un rango.
+                </p>
+                <div class="input-group">
+                    <input type="text" id="downloadIds" placeholder="IDs: 2029, 2030, 2031, ... o rango: 2029-2045">
+                    <button onclick="downloadByIds()">⬇ Descargar</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="folderName" placeholder="Prefijo de archivo (opcional)" value="Tango">
+                </div>
+            </div>
+
+            <!-- TAB: RESULTADOS -->
+            <div class="tab-content" id="tab-results">
+                <h3 style="margin-bottom:10px; color:#00d4ff;">Canciones encontradas</h3>
+                <div class="controls">
+                    <button class="btn-secondary" onclick="downloadAllFound()">⬇ Descargar todas</button>
+                    <button class="btn-secondary" onclick="exportResults()">📋 Exportar lista</button>
+                    <button class="btn-secondary" onclick="clearResults()">🗑 Limpiar</button>
+                </div>
+                <div id="resultsTableContainer">
+                    <p style="color:#888; text-align:center; padding:20px;">Aún no se han escaneado canciones. Ve a la pestaña "Escáner de IDs".</p>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="stats">
                 <div class="stat">
-                    <div class="stat-number" id="statTotal">0</div>
-                    <div class="stat-label">Total canciones</div>
+                    <div class="stat-number" id="statFound">0</div>
+                    <div class="stat-label">Encontradas</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-number" id="statVisible">0</div>
-                    <div class="stat-label">Visibles</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number" id="statSelected">0</div>
-                    <div class="stat-label">Seleccionadas</div>
+                    <div class="stat-number" id="statChecked">0</div>
+                    <div class="stat-label">Verificadas</div>
                 </div>
                 <div class="stat">
                     <div class="stat-number" id="statDownloaded">0</div>
                     <div class="stat-label">Descargadas</div>
                 </div>
-            </div>
-            
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
+                <div class="stat">
+                    <div class="stat-number" id="statProgress">0%</div>
+                    <div class="stat-label">Progreso</div>
+                </div>
             </div>
         </div>
-        
-        <div class="panel">
-            <div class="select-all-bar">
-                <label>
-                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
-                    <span>Seleccionar todas las visibles</span>
-                </label>
-                <span id="showingText">Mostrando 0 canciones</span>
-            </div>
-            <div class="songs-list" id="songsList"></div>
-        </div>
-        
+
         <div class="panel">
             <div class="log" id="log"></div>
+            <p class="note">
+                💡 <strong>Tip:</strong> Los navegadores no permiten crear carpetas automáticamente. 
+                Configura tu carpeta de descargas en: Chrome → Configuración → Descargas → Ubicación
+            </p>
         </div>
     </div>
 
     <script>
-        // ========== DATOS DE CANCIONES (muestra inicial, se puede ampliar) ==========
-        // Formato: [título, género, slug, id_aproximado]
-        const songsData = [
-            ["Arrabal amargo", "Tango", "arrabal-amargo", 2029],
-            ["Arrogancia", "Tango", "arrogancia", 2030],
-            ["El patio de la Morocha", "Tango", "el-patio-de-la-morocha", 2031],
-            ["Estrella", "Tango", "estrella", 2032],
-            ["Honrar la vida", "Tango", "honrar-la-vida", 2033],
-            ["Hormiga negra", "Tango", "hormiga-negra", 2034],
-            ["La mentirosa", "Tango", "la-mentirosa", 2035],
-            ["Malvón", "Tango", "malvon", 2036],
-            ["No me pregunten por qué", "Tango", "no-me-pregunten-por-que", 2037],
-            ["No vendrá", "Tango", "no-vendra", 2038],
-            ["Pa' mama", "Tango", "pa-mama", 2039],
-            ["Por las calles del tango", "Tango", "por-las-calles-del-tango", 2040],
-            ["Qué me importa tu pasado", "Tango", "que-me-importa-tu-pasado", 2041],
-            ["Que nadie se entere", "Tango", "que-nadie-se-entere", 2042],
-            ["San Isidro en soledad", "Tango", "san-isidro-en-soledad", 2043],
-            ["A un semejante", "Tango", "a-un-semejante", 2044],
-            ["A bailar", "Tango", "a-bailar", 2045],
-            ["A bailar el tango", "Tango", "a-bailar-el-tango", 2046],
-            ["A buen tiempo", "Tango", "a-buen-tiempo", 2047],
-            ["A cara limpia", "Tango", "a-cara-limpia", 2048],
-            ["A ciegas", "Tango", "a-ciegas", 2049],
-            ["Adiós", "Tango", "adios", 2050],
-            ["Adiós Buenos Aires", "Tango", "adios-buenos-aires", 2051],
-            ["Adiós muchachos", "Tango", "adios-muchachos", 2052],
-            ["A media luz", "Tango", "a-media-luz", 2053],
-            ["Alma de bohemio", "Tango", "alma-de-bohemio", 2054],
-            ["Amor y tango", "Tango", "amor-y-tango", 2055],
-            ["Así se baila el tango", "Tango", "asi-se-baila-el-tango", 2056],
-            ["Cambalache", "Tango", "cambalache", 2057],
-            ["Caminito", "Tango", "caminito", 2058],
-            ["El choclo", "Tango", "el-choclo", 2059],
-            ["La cumparsita", "Tango", "la-cumparsita", 2060],
-            ["Mi Buenos Aires querido", "Tango", "mi-buenos-aires-querido", 2061],
-            ["Uno", "Tango", "uno", 2062],
-            ["Volver", "Tango", "volver", 2063],
-            ["A la luz del candil", "Tango", "a-la-luz-del-candil", 2064],
-            ["Abrazado a mi pasado", "Tango", "abrazado-a-mi-pasado", 2065],
-            ["Adiós Nonino", "Tango", "adios-nonino", 2066],
-            ["Balada para un loco", "Tango", "balada-para-un-loco", 2067],
-            ["Chiquilín de Bachín", "Tango", "chiquilin-de-bachin", 2068],
-            ["Cuesta abajo", "Tango", "cuesta-abajo", 2069],
-            ["El día que me quieras", "Tango", "el-dia-que-me-quieras", 2070],
-            ["El último café", "Tango", "el-ultimo-cafe", 2071],
-            ["Gallo ciego", "Tango", "gallo-ciego", 2072],
-            ["Milonga sentimental", "Milonga", "milonga-sentimental", 2073],
-            ["Milonga del ángel", "Milonga", "milonga-del-angel", 2074],
-            ["Milonga triste", "Milonga", "milonga-triste", 2075],
-            ["Milonga de mis amores", "Milonga", "milonga-de-mis-amores", 2076],
-            ["Milonga del 900", "Milonga", "milonga-del-900", 2077],
-            ["Milonga para asesinar", "Milonga", "milonga-para-asesinar", 2078],
-            ["Milonga del recuerdo", "Milonga", "milonga-del-recuerdo", 2079],
-            ["Milonga de la buena suerte", "Milonga", "milonga-de-la-buena-suerte", 2080],
-            ["Milonga del corazón", "Milonga", "milonga-del-corazon", 2081],
-            ["Milonga de la plaza", "Milonga", "milonga-de-la-plaza", 2082],
-            ["Milonga de los perros", "Milonga", "milonga-de-los-perros", 2083],
-            ["Milonga de la juventud", "Milonga", "milonga-de-la-juventud", 2084],
-            ["Milonga del 900", "Milonga", "milonga-del-900-2", 2085],
-            ["Desde el alma", "Vals", "desde-el-alma", 2086],
-            ["El choclo", "Vals", "el-choclo-vals", 2087],
-            ["Ilusión de mi vida", "Vals", "ilusion-de-mi-vida", 2088],
-            ["Palomita blanca", "Vals", "palomita-blanca", 2089],
-            ["Tristeza de un doble A", "Vals", "tristeza-de-un-doble-a", 2090],
-            ["Valsecito de antes", "Vals", "valsecito-de-antes", 2091],
-            ["Vals de la 45", "Vals", "vals-de-la-45", 2092],
-            ["Vals de la calle", "Vals", "vals-de-la-calle", 2093],
-            ["Vals de mi corazón", "Vals", "vals-de-mi-corazon", 2094],
-            ["Vals de la esperanza", "Vals", "vals-de-la-esperanza", 2095],
-            ["Vals de la despedida", "Vals", "vals-de-la-despedida", 2096],
-            ["Vals de la noche", "Vals", "vals-de-la-noche", 2097],
-            ["Vals de la primavera", "Vals", "vals-de-la-primavera", 2098],
-            ["Vals de la tristeza", "Vals", "vals-de-la-tristeza", 2099],
-            ["Vals de la alegría", "Vals", "vals-de-la-alegria", 2100],
-            ["Canción de Buenos Aires", "Canción", "cancion-de-buenos-aires", 2101],
-            ["Canción del suburbio", "Canción", "cancion-del-suburbio", 2102],
-            ["Canción de la barra", "Canción", "cancion-de-la-barra", 2103],
-            ["Canción de la noche", "Canción", "cancion-de-la-noche", 2104],
-            ["Canción de la esperanza", "Canción", "cancion-de-la-esperanza", 2105],
-            ["Canción del amor", "Canción", "cancion-del-amor", 2106],
-            ["Canción de la tristeza", "Canción", "cancion-de-la-tristeza", 2107],
-            ["Canción de la alegría", "Canción", "cancion-de-la-alegria", 2108],
-            ["Canción de la nostalgia", "Canción", "cancion-de-la-nostalgia", 2109],
-            ["Canción de la memoria", "Canción", "cancion-de-la-memoria", 2110],
-            ["Poema lunfardo", "Poema lunfardo", "poema-lunfardo", 2111],
-            ["Poema evocativo", "Poema evocativo", "poema-evocativo", 2112],
-            ["Estilo", "Estilo", "estilo", 2113],
-            ["Ranchera", "Ranchera", "ranchera", 2114],
-            ["Zamba", "Zamba", "zamba", 2115],
-            ["Candombe", "Candombe", "candombe", 2116],
-            ["Bolero", "Bolero", "bolero", 2117],
-            ["Foxtrot", "Foxtrot", "foxtrot", 2118],
-            ["Pasodoble", "Pasodoble", "pasodoble", 2119],
-            ["Shimmy", "Shimmy", "shimmy", 2120],
-            ["Biguá", "Biguá", "bigua", 2121],
-            ["Gato", "Gato", "gato", 2122],
-            ["Bailecito", "Bailecito", "bailecito", 2123],
-            ["Bambuco", "Bambuco", "bambuco", 2124],
-            ["Shotis", "Shotis", "shotis", 2125],
-            ["Polca", "Polca", "polca", 2126],
-            ["Murga", "Murga", "murga", 2127],
-            ["Triste campero", "Triste campero", "triste-campero", 2128],
-            ["Arr. en tango", "Arr. en tango", "arr-en-tango", 2129],
-            ["Arr. en vals", "Arr. en vals", "arr-en-vals", 2130],
-            ["Melodía", "Melodía", "melodia", 2131],
-            ["Clásico", "Clásico", "clasico", 2132]
-        ];
-        
         const BASE_URL = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
-        
-        let currentFilter = { letter: 'Todas', genre: 'Todos', search: '' };
-        let isRunning = false;
-        let selectedSongs = new Set();
+        let isScanning = false;
+        let isDownloading = false;
+        let foundSongs = []; // {id, size, url}
         let downloadedCount = 0;
-        
-        // ========== INICIALIZACIÓN ==========
-        function init() {
-            createAlphabetFilter();
-            createGenreFilter();
-            renderSongs();
-            updateStats();
+        let checkedCount = 0;
+
+        // ========== TABS ==========
+        function setTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
         }
-        
-        // ========== FILTROS ALFABÉTICOS ==========
-        function createAlphabetFilter() {
-            const container = document.getElementById('alphabetFilter');
-            const letters = ['Todas', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
-                           'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-            
-            letters.forEach(letter => {
-                const btn = document.createElement('button');
-                btn.textContent = letter;
-                btn.dataset.letter = letter;
-                if (letter === 'Todas') btn.classList.add('active');
-                btn.onclick = () => {
-                    document.querySelectorAll('.alphabet-filter button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter.letter = letter;
-                    renderSongs();
-                };
-                container.appendChild(btn);
-            });
-        }
-        
-        // ========== FILTROS POR GÉNERO ==========
-        function createGenreFilter() {
-            const container = document.getElementById('genreFilter');
-            const genres = ['Todos', 'Tango', 'Vals', 'Milonga', 'Canción', 'Poema lunfardo', 
-                          'Estilo', 'Ranchera', 'Zamba', 'Candombe', 'Bolero', 'Foxtrot', 
-                          'Pasodoble', 'Biguá', 'Gato', 'Bailecito', 'Polca', 'Murga'];
-            
-            genres.forEach(genre => {
-                const btn = document.createElement('button');
-                btn.textContent = genre;
-                btn.dataset.genre = genre;
-                if (genre === 'Todos') btn.classList.add('active');
-                btn.onclick = () => {
-                    document.querySelectorAll('.genre-filter button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter.genre = genre;
-                    renderSongs();
-                };
-                container.appendChild(btn);
-            });
-        }
-        
-        // ========== BÚSQUEDA ==========
-        document.getElementById('searchBox').addEventListener('input', (e) => {
-            currentFilter.search = e.target.value.toLowerCase();
-            renderSongs();
-        });
-        
-        // ========== RENDERIZAR CANCIONES ==========
-        function renderSongs() {
-            const container = document.getElementById('songsList');
-            container.innerHTML = '';
-            
-            let filtered = songsData.filter(song => {
-                const [title, genre] = song;
-                const matchesLetter = currentFilter.letter === 'Todas' || 
-                    title.toUpperCase().startsWith(currentFilter.letter);
-                const matchesGenre = currentFilter.genre === 'Todos' || genre === currentFilter.genre;
-                const matchesSearch = currentFilter.search === '' || 
-                    title.toLowerCase().includes(currentFilter.search);
-                return matchesLetter && matchesGenre && matchesSearch;
-            });
-            
-            document.getElementById('statVisible').textContent = filtered.length;
-            document.getElementById('showingText').textContent = `Mostrando ${filtered.length} canciones`;
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="no-results">No se encontraron canciones con esos filtros</div>';
-                return;
-            }
-            
-            filtered.forEach(([title, genre, slug, id]) => {
-                const item = document.createElement('div');
-                item.className = 'song-item';
-                item.dataset.id = id;
-                
-                const isSelected = selectedSongs.has(id);
-                
-                item.innerHTML = `
-                    <input type="checkbox" class="song-checkbox" 
-                           ${isSelected ? 'checked' : ''} 
-                           onchange="toggleSong(${id})" id="chk-${id}">
-                    <div class="song-info">
-                        <div class="song-title">${title}</div>
-                        <span class="song-genre">${genre}</span>
-                    </div>
-                    <div class="song-actions">
-                        <button class="play-btn" onclick="playSong(${id}, '${title.replace(/'/g, "\\'")}')" title="Escuchar">▶</button>
-                        <button onclick="downloadSingle(${id}, '${title.replace(/'/g, "\\'")}')" title="Descargar">⬇</button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-            
-            updateStats();
-        }
-        
-        // ========== SELECCIÓN ==========
-        function toggleSong(id) {
-            if (selectedSongs.has(id)) {
-                selectedSongs.delete(id);
-            } else {
-                selectedSongs.add(id);
-            }
-            updateStats();
-        }
-        
-        function selectAllVisible() {
-            const visibleIds = getVisibleIds();
-            visibleIds.forEach(id => selectedSongs.add(id));
-            renderSongs();
-            log(`Seleccionadas ${visibleIds.length} canciones visibles`, 'info');
-        }
-        
-        function deselectAll() {
-            selectedSongs.clear();
-            renderSongs();
-            log('Todas deseleccionadas', 'info');
-        }
-        
-        function toggleSelectAll() {
-            const checkbox = document.getElementById('selectAllCheckbox');
-            if (checkbox.checked) {
-                selectAllVisible();
-            } else {
-                const visibleIds = getVisibleIds();
-                visibleIds.forEach(id => selectedSongs.delete(id));
-                renderSongs();
-            }
-        }
-        
-        function getVisibleIds() {
-            return songsData.filter(song => {
-                const [title, genre] = song;
-                const matchesLetter = currentFilter.letter === 'Todas' || 
-                    title.toUpperCase().startsWith(currentFilter.letter);
-                const matchesGenre = currentFilter.genre === 'Todos' || genre === currentFilter.genre;
-                const matchesSearch = currentFilter.search === '' || 
-                    title.toLowerCase().includes(currentFilter.search);
-                return matchesLetter && matchesGenre && matchesSearch;
-            }).map(s => s[3]);
-        }
-        
-        // ========== DESCARGA ==========
-        function downloadSingle(id, title) {
-            const url = `${BASE_URL}${id}.ogg`;
-            const safeTitle = title.replace(/[^a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]/g, '_');
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${safeTitle}.ogg`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            downloadedCount++;
-            updateStats();
-            log(`✓ Descargada: ${title}`, 'success');
-        }
-        
-        async function downloadSelected() {
-            if (selectedSongs.size === 0) {
-                log('No hay canciones seleccionadas', 'error');
-                return;
-            }
-            
-            isRunning = true;
-            document.getElementById('btnStop').disabled = false;
-            
-            const ids = Array.from(selectedSongs);
-            const total = ids.length;
-            
-            log(`Iniciando descarga de ${total} canciones...`, 'info');
-            
-            for (let i = 0; i < ids.length && isRunning; i++) {
-                const id = ids[i];
-                const song = songsData.find(s => s[3] === id);
-                if (song) {
-                    const [title] = song;
-                    downloadSingle(id, title);
-                    updateProgress(i + 1, total);
-                }
-                await new Promise(r => setTimeout(r, 1000));
-            }
-            
-            isRunning = false;
-            document.getElementById('btnStop').disabled = true;
-            log(`Descarga completada: ${downloadedCount} canciones`, 'success');
-        }
-        
-        function stopDownload() {
-            isRunning = false;
-            log('Descarga detenida', 'info');
-            document.getElementById('btnStop').disabled = true;
-        }
-        
-        // ========== REPRODUCIR ==========
-        function playSong(id, title) {
-            const url = `${BASE_URL}${id}.ogg`;
-            
-            // Crear reproductor temporal
-            const existing = document.getElementById('temp-player');
-            if (existing) existing.remove();
-            
-            const player = document.createElement('audio');
-            player.id = 'temp-player';
-            player.controls = true;
-            player.src = url;
-            player.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:1000; width:300px;';
-            player.autoplay = true;
-            
-            const label = document.createElement('div');
-            label.textContent = `▶ ${title}`;
-            label.style.cssText = 'position:fixed; bottom:55px; right:20px; z-index:1000; background:rgba(0,0,0,0.8); color:#4ecca3; padding:5px 10px; border-radius:5px; font-size:12px;';
-            label.id = 'temp-label';
-            
-            document.body.appendChild(player);
-            document.body.appendChild(label);
-            
-            log(`Reproduciendo: ${title}`, 'info');
-            
-            player.onended = () => {
-                player.remove();
-                label.remove();
-            };
-        }
-        
-        // ========== EXPORTAR ==========
-        function exportSelectedList() {
-            if (selectedSongs.size === 0) {
-                log('No hay canciones seleccionadas para exportar', 'error');
-                return;
-            }
-            
-            const lines = [];
-            selectedSongs.forEach(id => {
-                const song = songsData.find(s => s[3] === id);
-                if (song) {
-                    lines.push(`${song[0]} | ${song[1]} | ${BASE_URL}${id}.ogg`);
-                }
-            });
-            
-            const blob = new Blob([lines.join('\\n')], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'todotango_lista.txt';
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            log(`Lista exportada: ${selectedSongs.size} canciones`, 'success');
-        }
-        
-        // ========== ESTADÍSTICAS Y LOG ==========
-        function updateStats() {
-            document.getElementById('statTotal').textContent = songsData.length;
-            document.getElementById('statSelected').textContent = selectedSongs.size;
-            document.getElementById('statDownloaded').textContent = downloadedCount;
-        }
-        
-        function updateProgress(current, total) {
-            const pct = Math.round((current / total) * 100);
-            document.getElementById('progressBar').style.width = pct + '%';
-        }
-        
+
+        // ========== LOG ==========
         function log(message, type = 'info') {
             const logEl = document.getElementById('log');
             const div = document.createElement('div');
@@ -732,11 +310,260 @@
             logEl.appendChild(div);
             logEl.scrollTop = logEl.scrollHeight;
         }
-        
-        // Iniciar
-        init();
+
+        function updateStats() {
+            document.getElementById('statFound').textContent = foundSongs.length;
+            document.getElementById('statChecked').textContent = checkedCount;
+            document.getElementById('statDownloaded').textContent = downloadedCount;
+        }
+
+        function updateProgress(current, total) {
+            const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('statProgress').textContent = pct + '%';
+        }
+
+        // ========== ESCANER ==========
+        function quickScan(start, end) {
+            document.getElementById('scanStart').value = start;
+            document.getElementById('scanEnd').value = end;
+            startScan();
+        }
+
+        async function startScan() {
+            if (isScanning) return;
+            
+            const startId = parseInt(document.getElementById('scanStart').value) || 1;
+            const endId = parseInt(document.getElementById('scanEnd').value) || startId;
+            
+            if (startId > endId) {
+                log('Error: El ID inicial debe ser menor o igual al final', 'error');
+                return;
+            }
+
+            isScanning = true;
+            document.getElementById('btnStopScan').disabled = false;
+            checkedCount = 0;
+            
+            log(`🔍 Iniciando escaneo de IDs ${startId} a ${endId}...`, 'scan');
+            
+            const total = endId - startId + 1;
+            
+            for (let id = startId; id <= endId && isScanning; id++) {
+                checkedCount++;
+                updateProgress(checkedCount, total);
+                
+                try {
+                    // Método 1: Intentar HEAD request
+                    const result = await checkFileExists(id);
+                    
+                    if (result.exists && result.size > 5000) {
+                        foundSongs.push({ id, size: result.size, url: `${BASE_URL}${id}.ogg` });
+                        log(`✓ ID ${id}: ENCONTRADA (${(result.size/1024).toFixed(1)} KB)`, 'success');
+                        updateResultsTable();
+                    } else if (result.exists) {
+                        log(`✗ ID ${id}: Archivo muy pequeño (${result.size} bytes)`, 'error');
+                    } else {
+                        log(`✗ ID ${id}: No existe`, 'error');
+                    }
+                } catch (e) {
+                    log(`✗ ID ${id}: Error - ${e.message}`, 'error');
+                }
+                
+                updateStats();
+                
+                // Pausa para no saturar
+                if (isScanning && id < endId) {
+                    await new Promise(r => setTimeout(r, 500));
+                }
+            }
+            
+            isScanning = false;
+            document.getElementById('btnStopScan').disabled = true;
+            
+            log(`🔍 Escaneo completado! ${foundSongs.length} canciones encontradas.`, 'scan');
+            updateResultsTable();
+        }
+
+        function stopScan() {
+            isScanning = false;
+            log('Escaneo detenido.', 'info');
+            document.getElementById('btnStopScan').disabled = true;
+        }
+
+        // Verificar si un archivo existe usando diferentes métodos
+        async function checkFileExists(id) {
+            const url = `${BASE_URL}${id}.ogg`;
+            
+            // Método 1: fetch con no-cors (no podemos leer tamaño, pero sabemos si hay respuesta)
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(url, { 
+                    method: 'GET',
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeout);
+                
+                if (response.status === 200) {
+                    const blob = await response.blob();
+                    return { exists: true, size: blob.size };
+                }
+                return { exists: false, size: 0 };
+            } catch (e) {
+                // Si falla, intentar con otro método
+                return { exists: false, size: 0 };
+            }
+        }
+
+        // ========== DESCARGAR POR IDs ==========
+        async function downloadByIds() {
+            const input = document.getElementById('downloadIds').value.trim();
+            const prefix = document.getElementById('folderName').value.trim() || 'Tango';
+            
+            if (!input) {
+                log('Ingresa al menos un ID', 'error');
+                return;
+            }
+            
+            let ids = [];
+            
+            // Parsear entrada: puede ser "2029, 2030, 2031" o "2029-2045"
+            if (input.includes('-')) {
+                const [start, end] = input.split('-').map(s => parseInt(s.trim()));
+                for (let i = start; i <= end; i++) ids.push(i);
+            } else {
+                ids = input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+            }
+            
+            if (ids.length === 0) {
+                log('No se encontraron IDs válidos', 'error');
+                return;
+            }
+            
+            log(`⬇ Iniciando descarga de ${ids.length} canciones...`, 'info');
+            
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                updateProgress(i + 1, ids.length);
+                
+                const url = `${BASE_URL}${id}.ogg`;
+                const filename = `${prefix}_${id}.ogg`;
+                
+                // Crear link de descarga
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                downloadedCount++;
+                updateStats();
+                log(`⬇ Descargando: ${filename}`, 'success');
+                
+                await new Promise(r => setTimeout(r, 1200)); // Pausa entre descargas
+            }
+            
+            log(`✓ Descarga completada: ${ids.length} archivos`, 'success');
+        }
+
+        // ========== RESULTADOS ==========
+        function updateResultsTable() {
+            const container = document.getElementById('resultsTableContainer');
+            
+            if (foundSongs.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center; padding:20px;">Aún no se han escaneado canciones.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tamaño</th>
+                            <th>URL</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            foundSongs.forEach(song => {
+                html += `
+                    <tr>
+                        <td><strong>${song.id}</strong></td>
+                        <td>${(song.size/1024).toFixed(1)} KB</td>
+                        <td><a href="${song.url}" target="_blank">${song.url}</a></td>
+                        <td>
+                            <a href="${song.url}" download="Tango_${song.id}.ogg" class="download-link">⬇ Descargar</a>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function downloadAllFound() {
+            if (foundSongs.length === 0) {
+                log('No hay canciones para descargar', 'error');
+                return;
+            }
+            
+            log(`⬇ Descargando ${foundSongs.length} canciones encontradas...`, 'info');
+            
+            foundSongs.forEach((song, i) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = song.url;
+                    link.download = `Tango_${song.id}.ogg`;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    downloadedCount++;
+                    updateStats();
+                    log(`⬇ Descargado: Tango_${song.id}.ogg`, 'success');
+                }, i * 1500); // 1.5 segundos entre cada una
+            });
+            
+            log(`✓ ${foundSongs.length} descargas iniciadas`, 'success');
+        }
+
+        function exportResults() {
+            if (foundSongs.length === 0) {
+                log('No hay resultados para exportar', 'error');
+                return;
+            }
+            
+            const lines = foundSongs.map(s => `ID: ${s.id} | ${(s.size/1024).toFixed(1)} KB | ${s.url}`);
+            const blob = new Blob([lines.join('\\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'todotango_encontrados.txt';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log(`📋 Lista exportada: ${foundSongs.length} canciones`, 'success');
+        }
+
+        function clearResults() {
+            foundSongs = [];
+            updateResultsTable();
+            updateStats();
+            log('Resultados limpiados', 'info');
+        }
     </script>
 </body>
 </html>
-print("Archivo guardado: /mnt/agents/output/index.html")
+
+print("✅ Archivo guardado: /mnt/agents/output/index.html")
 print(f"Tamaño: {len(html_content)} caracteres")

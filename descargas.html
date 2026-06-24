@@ -6,272 +6,134 @@
 <title>TodoTango Scraper</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --bg: #0d0d0d;
-  --surface: #161616;
-  --surface2: #1f1f1f;
-  --surface3: #252525;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.14);
-  --text: #ede9df;
-  --text2: #7a7570;
-  --text3: #484440;
-  --gold: #c9a84c;
-  --gold2: #a07830;
-  --red: #8b1a2a;
-  --red-text: #e07070;
-  --green: #2a6640;
-  --green-text: #7ec89a;
-  --radius: 6px;
-  --radius-lg: 10px;
+  --bg: #0d0d0d; --surface: #161616; --surface2: #1f1f1f; --surface3: #252525;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.14);
+  --text: #ede9df; --text2: #7a7570; --text3: #484440;
+  --gold: #c9a84c; --red: #8b1a2a; --red-text: #e07070;
+  --green: #2a6640; --green-text: #7ec89a; --radius: 6px; --radius-lg: 10px;
 }
+body { background:var(--bg); color:var(--text); font-family:'Georgia',serif; min-height:100vh; font-size:14px; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  min-height: 100vh;
-  font-size: 14px;
-  line-height: 1.5;
-}
+header { border-bottom:1px solid var(--border); padding:1.5rem 2rem; display:flex; align-items:center; gap:1.2rem; }
+.logo { width:44px;height:44px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gold);flex-shrink:0; }
+header h1 { font-size:22px;font-weight:400;letter-spacing:.04em; }
+header p { font-size:11px;color:var(--text2);font-family:monospace;margin-top:2px; }
 
-/* ── Header ── */
-header {
-  border-bottom: 1px solid var(--border);
-  padding: 1.5rem 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-}
+main { max-width:1300px;margin:0 auto;padding:1.5rem 2rem; }
 
-.logo {
-  width: 44px; height: 44px;
-  border: 1px solid var(--gold);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: var(--gold);
-  flex-shrink: 0;
-}
+.tabs { display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:1.5rem; }
+.tab { padding:8px 18px;font-family:monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--gold);border-color:var(--gold); }
+.panel { display:none; }
+.panel.active { display:block; }
 
-header h1 { font-size: 22px; font-weight: 400; letter-spacing: .04em; }
-header p  { font-size: 11px; color: var(--text2); font-family: monospace; margin-top: 2px; }
+.card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem; }
+.card-title { font-family:monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem; }
 
-/* ── Layout ── */
-main { max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; }
-
-/* ── Tabs ── */
-.tabs {
-  display: flex; gap: 2px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.5rem;
-}
-
-.tab {
-  padding: 8px 18px;
-  font-family: monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent;
-  transition: all .15s; margin-bottom: -1px;
-}
-
-.tab:hover { color: var(--text); }
-.tab.active { color: var(--gold); border-color: var(--gold); }
-
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* ── Card ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.card-title {
-  font-family: monospace; font-size: 10px; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--text3); margin-bottom: 1rem;
-}
-
-/* ── Controls ── */
-.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row { display:flex;gap:8px;flex-wrap:wrap;align-items:center; }
 
 select, input[type="text"], input[type="number"] {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-size: 12px; font-family: monospace;
-  padding: 7px 10px; height: 34px; outline: none;
-  transition: border-color .15s;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);
+  color:var(--text);font-size:12px;font-family:monospace;padding:7px 10px;height:34px;outline:none;transition:border-color .15s;
 }
-select:focus, input:focus { border-color: var(--gold); }
-
-#selLetra  { width: 80px; }
-#selGenero { width: 170px; }
+select:focus,input:focus { border-color:var(--gold); }
+#selLetra { width:80px; } #selGenero { width:170px; }
 
 button {
-  height: 34px; padding: 0 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border2);
-  background: transparent; color: var(--text);
-  font-size: 12px; font-family: monospace;
-  cursor: pointer; letter-spacing: .04em;
-  transition: all .15s; white-space: nowrap;
+  height:34px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border2);
+  background:transparent;color:var(--text);font-size:12px;font-family:monospace;
+  cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap;
 }
-button:hover { background: var(--surface2); }
-button:disabled { opacity: .3; cursor: not-allowed; }
+button:hover { background:var(--surface2); }
+button:disabled { opacity:.3;cursor:not-allowed; }
+.btn-primary { background:var(--gold);color:#0d0d0d;border-color:var(--gold);font-weight:700; }
+.btn-primary:hover { opacity:.85;background:var(--gold); }
+.btn-danger { border-color:var(--red);color:var(--red-text); }
+.btn-danger:hover { background:rgba(139,26,42,.15); }
+.btn-success { border-color:var(--green);color:var(--green-text); }
+.btn-success:hover { background:rgba(42,102,64,.2); }
 
-.btn-primary { background: var(--gold); color: #0d0d0d; border-color: var(--gold); font-weight: 700; }
-.btn-primary:hover { opacity: .85; background: var(--gold); }
-.btn-danger  { border-color: var(--red); color: var(--red-text); }
-.btn-danger:hover  { background: rgba(139,26,42,.15); }
-.btn-success { border-color: var(--green); color: var(--green-text); }
-.btn-success:hover { background: rgba(42,102,64,.2); }
+.progress-bar { height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:6px; }
+.progress-fill { height:100%;background:var(--gold);transition:width .3s; }
+.status { font-family:monospace;font-size:11px;color:var(--text2);min-height:14px; }
 
-/* ── Progress ── */
-.progress-wrap { margin-top: 1rem; }
-.progress-bar  { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; margin-bottom: 6px; }
-.progress-fill { height: 100%; background: var(--gold); transition: width .3s; }
-.status { font-family: monospace; font-size: 11px; color: var(--text2); min-height: 14px; }
-
-/* ── Log ── */
 .log {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 10px 12px;
-  font-family: monospace; font-size: 11px; color: var(--text2);
-  max-height: 120px; overflow-y: auto;
-  margin-top: 10px; display: none;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;font-family:monospace;font-size:11px;color:var(--text2);
+  max-height:140px;overflow-y:auto;margin-top:10px;
 }
-.log-line { padding: 1px 0; }
-.log-ok   { color: var(--green-text); }
-.log-err  { color: var(--red-text); }
-.log-info { color: var(--gold); }
+.log-line { padding:1px 0; }
+.log-ok { color:var(--green-text); } .log-err { color:var(--red-text); } .log-info { color:var(--gold); } .log-warn { color:#e0a040; }
 
-/* ── Stats ── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 8px; margin-bottom: 1rem;
-}
-.stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-}
-.stat .n { font-size: 26px; color: var(--gold); line-height: 1; margin-bottom: 2px; }
-.stat .l { font-family: monospace; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+.stats-row { display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:1rem; }
+.stat { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px; }
+.stat .n { font-size:26px;color:var(--gold);line-height:1;margin-bottom:2px; }
+.stat .l { font-family:monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em; }
 
-/* ── Filter row ── */
-.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: .75rem; }
-.filter-row input[type="text"] { flex: 1; min-width: 180px; }
+.filter-row { display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:.75rem; }
+.filter-row input[type="text"] { flex:1;min-width:180px; }
 
-/* ── Table ── */
-.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.table-wrap { overflow-x: auto; }
-
-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-
+.table-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden; }
+.table-wrap { overflow-x:auto; }
+table { width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed; }
 thead th {
-  text-align: left; padding: 9px 12px;
-  font-family: monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--text3); background: var(--surface2);
-  border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 400;
+  text-align:left;padding:9px 12px;font-family:monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text3);background:var(--surface2);
+  border-bottom:1px solid var(--border);white-space:nowrap;font-weight:400;
 }
+tbody td { padding:8px 12px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover td { background:var(--surface2); }
+.col-sel { width:34px; } .col-titulo { width:24%; } .col-genero { width:10%; }
+.col-anio { width:6%; } .col-musica { width:18%; } .col-letra { width:18%; }
+.col-id { width:6%; } .col-oid { width:6%; } .col-dl { width:5%;text-align:center; }
+td a { color:var(--gold);text-decoration:none; }
+td a:hover { text-decoration:underline; }
+.badge { display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;font-family:monospace;letter-spacing:.04em;text-transform:uppercase;font-weight:700; }
+.b-tango   { background:rgba(201,168,76,.12);color:var(--gold);     border:1px solid rgba(201,168,76,.25); }
+.b-vals    { background:rgba(94,160,150,.12);color:#5ea096;          border:1px solid rgba(94,160,150,.25); }
+.b-milonga { background:rgba(160,120,60,.15);color:#c4895a;          border:1px solid rgba(160,120,60,.25); }
+.b-poema   { background:rgba(130,90,180,.12);color:#b07fd6;          border:1px solid rgba(130,90,180,.25); }
+.b-audio   { background:rgba(42,102,64,.15); color:var(--green-text);border:1px solid rgba(42,102,64,.25); }
+.b-other   { background:var(--surface2);color:var(--text3);          border:1px solid var(--border); }
 
-tbody td {
-  padding: 8px 12px; border-bottom: 1px solid var(--border);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.has-audio td:first-child+td+td+td+td+td+td+td { color:var(--green-text); }
 
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--surface2); }
+.pagination { display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--border);justify-content:center;font-family:monospace;font-size:11px;color:var(--text2); }
+.empty { text-align:center;padding:3rem 2rem;color:var(--text3);font-family:monospace;font-size:12px;line-height:2; }
+.empty-icon { font-size:36px;opacity:.25;margin-bottom:.5rem; }
 
-.col-sel    { width: 36px; }
-.col-titulo { width: 26%; }
-.col-genero { width: 11%; }
-.col-anio   { width: 7%; }
-.col-musica { width: 20%; }
-.col-letra  { width: 20%; }
-.col-id     { width: 7%; }
-.col-dl     { width: 5%; text-align: center; }
+/* Download panel */
+.dl-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:1rem;max-height:300px;overflow-y:auto; }
+.dl-item { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;flex-direction:column;gap:4px; }
+.dl-item .dl-title { font-size:12px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.dl-item .dl-meta { font-family:monospace;font-size:10px;color:var(--text2); }
+.dl-progress-bar { height:2px;background:var(--border);border-radius:1px;margin-top:4px; }
+.dl-progress-fill { height:100%;border-radius:1px;background:var(--gold);transition:width .3s; }
+.dl-status-badge { font-family:monospace;font-size:9px;padding:1px 6px;border-radius:4px;display:inline-block;text-transform:uppercase; }
+.ds-wait { background:rgba(255,255,255,.05);color:var(--text3); }
+.ds-loading { background:rgba(201,168,76,.15);color:var(--gold); }
+.ds-ok { background:rgba(42,102,64,.2);color:var(--green-text); }
+.ds-err { background:rgba(139,26,42,.2);color:var(--red-text); }
+.ds-skip { background:rgba(255,255,255,.05);color:var(--text3); }
 
-td a { color: var(--gold); text-decoration: none; }
-td a:hover { text-decoration: underline; }
+.export-row { display:flex;align-items:center;gap:8px;margin-top:1rem;flex-wrap:wrap; }
+.export-row .info { font-family:monospace;font-size:11px;color:var(--text3);margin-right:auto; }
+input[type="checkbox"] { accent-color:var(--gold);width:14px;height:14px;cursor:pointer; }
 
-.badge {
-  display: inline-block; font-size: 9px; padding: 2px 7px;
-  border-radius: 10px; font-family: monospace; letter-spacing: .04em;
-  text-transform: uppercase; font-weight: 700;
-}
-.b-tango   { background: rgba(201,168,76,.12); color: var(--gold);      border: 1px solid rgba(201,168,76,.25); }
-.b-vals    { background: rgba(94,160,150,.12); color: #5ea096;           border: 1px solid rgba(94,160,150,.25); }
-.b-milonga { background: rgba(160,120,60,.15); color: #c4895a;           border: 1px solid rgba(160,120,60,.25); }
-.b-poema   { background: rgba(130,90,180,.12); color: #b07fd6;           border: 1px solid rgba(130,90,180,.25); }
-.b-other   { background: var(--surface2); color: var(--text3);           border: 1px solid var(--border); }
+/* Debug modal */
+.modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:flex;align-items:center;justify-content:center; }
+.modal { background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:90%;max-width:800px;max-height:80vh;display:flex;flex-direction:column; }
+.modal-head { padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:12px; }
+.modal-body { padding:12px 16px;overflow:auto;flex:1;font-family:monospace;font-size:11px;color:var(--text2);white-space:pre-wrap;word-break:break-all; }
 
-.pagination {
-  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-  border-top: 1px solid var(--border); justify-content: center;
-  font-family: monospace; font-size: 11px; color: var(--text2);
-}
+footer { text-align:center;padding:2rem;font-size:10px;color:var(--text3);font-family:monospace;border-top:1px solid var(--border);margin-top:2rem;letter-spacing:.04em; }
 
-.empty {
-  text-align: center; padding: 3rem 2rem;
-  color: var(--text3); font-family: monospace; font-size: 12px; line-height: 2;
-}
-.empty-icon { font-size: 36px; opacity: .25; margin-bottom: .5rem; }
-
-/* ── Download panel ── */
-.dl-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 8px; margin-top: 1rem;
-  max-height: 280px; overflow-y: auto;
-}
-
-.dl-item {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 10px 12px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-
-.dl-item .dl-title { font-size: 12px; color: var(--text); font-weight: 600; }
-.dl-item .dl-meta  { font-family: monospace; font-size: 10px; color: var(--text2); }
-
-.dl-progress-bar { height: 2px; background: var(--border); border-radius: 1px; margin-top: 4px; }
-.dl-progress-fill { height: 100%; border-radius: 1px; background: var(--gold); transition: width .3s; }
-
-.dl-status-badge {
-  font-family: monospace; font-size: 9px; padding: 1px 6px;
-  border-radius: 4px; display: inline-block; text-transform: uppercase;
-}
-.ds-wait    { background: rgba(255,255,255,.05); color: var(--text3); }
-.ds-loading { background: rgba(201,168,76,.15); color: var(--gold); }
-.ds-ok      { background: rgba(42,102,64,.2);   color: var(--green-text); }
-.ds-err     { background: rgba(139,26,42,.2);   color: var(--red-text); }
-
-/* ── Export ── */
-.export-row {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 1rem; flex-wrap: wrap;
-}
-.export-row .info { font-family: monospace; font-size: 11px; color: var(--text3); margin-right: auto; }
-
-/* ── Checkbox ── */
-input[type="checkbox"] { accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer; }
-
-footer {
-  text-align: center; padding: 2rem;
-  font-size: 10px; color: var(--text3); font-family: monospace;
-  border-top: 1px solid var(--border); margin-top: 2rem; letter-spacing: .04em;
-}
-
-@media (max-width: 640px) {
-  main { padding: 1rem; }
-  .col-musica, .col-letra, .col-id { display: none; }
+@media (max-width:640px) {
+  main { padding:1rem; }
+  .col-musica,.col-letra,.col-id,.col-oid { display:none; }
 }
 </style>
 </head>
@@ -281,20 +143,18 @@ footer {
   <div class="logo">♩</div>
   <div>
     <h1>TodoTango Scraper</h1>
-    <p>Catálogo completo + descarga de audio · todotango.com</p>
+    <p>Catálogo + descarga de audio · todotango.com</p>
   </div>
 </header>
 
 <main>
-
   <div class="tabs">
     <div class="tab active" onclick="switchTab('scrape')">① Extracción</div>
-    <div class="tab" onclick="switchTab('download')" id="tabDl">② Descarga de audio</div>
+    <div class="tab" onclick="switchTab('download')">② Descarga de audio</div>
   </div>
 
-  <!-- ═══════════════ PANEL SCRAPE ═══════════════ -->
+  <!-- ══ PANEL SCRAPE ══ -->
   <div class="panel active" id="panelScrape">
-
     <div class="card">
       <div class="card-title">Configuración</div>
       <div class="row">
@@ -310,72 +170,63 @@ footer {
           <option value="z">Z</option>
           <option value="ALL">Todas A–Z</option>
         </select>
-
         <select id="selGenero">
           <option value="0">Todos los géneros</option>
-          <option value="7">Tango</option>
-          <option value="8">Vals</option>
-          <option value="4">Milonga</option>
-          <option value="6">Poema</option>
-          <option value="2">Folklore</option>
-          <option value="1">Canción</option>
-          <option value="5">Otros ritmos</option>
-          <option value="3">Foxtrot</option>
+          <option value="7">Tango</option><option value="8">Vals</option>
+          <option value="4">Milonga</option><option value="6">Poema</option>
+          <option value="2">Folklore</option><option value="1">Canción</option>
+          <option value="5">Otros ritmos</option><option value="3">Foxtrot</option>
         </select>
-
         <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:monospace;color:var(--text2);cursor:pointer;">
-          <input type="checkbox" id="chkEnrich" checked> Enriquecer detalles
+          <input type="checkbox" id="chkEnrich" checked> Extraer ID audio
         </label>
-
         <button class="btn-primary" id="btnScrape" onclick="startScrape()">▶ Extraer</button>
         <button class="btn-danger"  id="btnStop"   onclick="stopScrape()" style="display:none">■ Detener</button>
+        <button onclick="showDebugPage()" style="font-size:11px" title="Ver HTML crudo de un tema para diagnosticar">🔍 Debug HTML</button>
       </div>
-
-      <div class="progress-wrap" id="progressWrap" style="display:none">
-        <div style="margin-top:10px">
-          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-          <div class="status" id="statusMsg"></div>
-        </div>
+      <div id="progressWrap" style="display:none;margin-top:10px">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="status" id="statusMsg"></div>
       </div>
-
-      <div class="log" id="debugLog"></div>
+      <div class="log" id="debugLog" style="display:none"></div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-row" id="statsRow" style="display:none">
       <div class="stat"><div class="n" id="sTot">0</div><div class="l">Total</div></div>
       <div class="stat"><div class="n" id="sTan">0</div><div class="l">Tangos</div></div>
       <div class="stat"><div class="n" id="sVal">0</div><div class="l">Vals</div></div>
       <div class="stat"><div class="n" id="sMil">0</div><div class="l">Milongas</div></div>
       <div class="stat"><div class="n" id="sPoe">0</div><div class="l">Poemas</div></div>
+      <div class="stat"><div class="n" id="sAud">0</div><div class="l">Con audio</div></div>
       <div class="stat"><div class="n" id="sOtr">0</div><div class="l">Otros</div></div>
     </div>
 
-    <!-- Filtros -->
     <div class="filter-row" id="filterRow" style="display:none">
       <input type="text" id="filterText" placeholder="Buscar título, músico, letrista…" oninput="renderTable()">
       <select id="filterGenero" onchange="renderTable()">
         <option value="">Todos los géneros</option>
-        <option value="tango">Tango</option>
-        <option value="vals">Vals</option>
-        <option value="milonga">Milonga</option>
-        <option value="poema">Poema</option>
-        <option value="canción">Canción</option>
-        <option value="folklore">Folklore</option>
+        <option value="tango">Tango</option><option value="vals">Vals</option>
+        <option value="milonga">Milonga</option><option value="poema">Poema</option>
+        <option value="canción">Canción</option><option value="folklore">Folklore</option>
         <option value="foxtrot">Foxtrot</option>
+      </select>
+      <select id="filterAudio" onchange="renderTable()">
+        <option value="">Con y sin audio</option>
+        <option value="yes">Solo con audio</option>
+        <option value="no">Solo sin audio</option>
       </select>
       <select id="sortBy" onchange="renderTable()">
         <option value="titulo">Título A–Z</option>
         <option value="anio">Año</option>
         <option value="genero">Género</option>
-        <option value="id">ID</option>
+        <option value="id">ID tema</option>
       </select>
-      <button onclick="selectAll(true)"  style="font-size:11px">☑ Sel. todo</button>
-      <button onclick="selectAll(false)" style="font-size:11px">☐ Deselec.</button>
+      <button onclick="selectAll(true)"  style="font-size:11px">☑ Todo</button>
+      <button onclick="selectAll(false)" style="font-size:11px">☐ Ninguno</button>
+      <button onclick="selectAudioOnly()" style="font-size:11px;color:var(--green-text)">♪ Solo con audio</button>
     </div>
 
-    <!-- Tabla -->
-    <div class="table-card" id="tableCard">
+    <div class="table-card">
       <div class="empty" id="emptyMsg">
         <div class="empty-icon">♬</div>
         Seleccioná una letra y hacé clic en <strong>Extraer</strong>
@@ -391,8 +242,9 @@ footer {
                 <th class="col-anio">Año</th>
                 <th class="col-musica">Música</th>
                 <th class="col-letra">Letra</th>
-                <th class="col-id">ID</th>
-                <th class="col-dl">OGG</th>
+                <th class="col-id">ID tema</th>
+                <th class="col-oid">ID ogg</th>
+                <th class="col-dl">↓</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -406,94 +258,79 @@ footer {
       </div>
     </div>
 
-    <!-- Export -->
     <div class="export-row" id="exportRow" style="display:none">
       <span class="info" id="exportInfo"></span>
       <button onclick="exportCSV()">↓ CSV</button>
       <button onclick="exportJSON()">↓ JSON</button>
       <button class="btn-success" onclick="sendToDownload()">→ Descargar audio seleccionados</button>
     </div>
+  </div>
 
-  </div><!-- /panelScrape -->
-
-  <!-- ═══════════════ PANEL DOWNLOAD ═══════════════ -->
+  <!-- ══ PANEL DOWNLOAD ══ -->
   <div class="panel" id="panelDownload">
-
     <div class="card">
       <div class="card-title">Descarga masiva de OGG</div>
       <p style="font-size:12px;color:var(--text2);margin-bottom:1rem;">
-        Los archivos están en <code style="color:var(--gold)">https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/{ID}.ogg</code>.
-        Seleccioná temas en la pestaña Extracción y mandálos acá, o ingresá IDs manualmente.
+        URL de audio: <code style="color:var(--gold)">https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/{ID_OGG}.ogg</code><br>
+        El <strong>ID OGG</strong> es distinto al ID del tema — se extrae de la página individual de cada tema.
+        Los temas sin ID OGG no tienen audio disponible.
       </p>
-
       <div class="row" style="margin-bottom:10px">
-        <input type="text" id="manualIds" placeholder="IDs separados por coma: 2030, 2031, 2032…" style="flex:1;min-width:200px">
-        <input type="number" id="concurrency" value="3" min="1" max="8" style="width:60px" title="Descargas simultáneas">
+        <input type="text" id="manualIds" placeholder="IDs OGG separados por coma: 1281, 2030, 500…" style="flex:1;min-width:200px">
+        <input type="number" id="concurrency" value="3" min="1" max="6" style="width:60px" title="Descargas simultáneas">
+        <label style="font-size:11px;font-family:monospace;color:var(--text2)">simultáneas</label>
         <button class="btn-primary" id="btnDownload" onclick="startDownload()">▶ Descargar</button>
         <button class="btn-danger" id="btnDlStop" onclick="stopDownload()" style="display:none">■ Detener</button>
       </div>
-
-      <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" id="dlProgressFill" style="width:0%"></div></div>
-        <div class="status" id="dlStatus"></div>
-      </div>
+      <div class="progress-bar"><div class="progress-fill" id="dlProgressFill" style="width:0%"></div></div>
+      <div class="status" id="dlStatus"></div>
     </div>
-
-    <!-- Queue -->
     <div class="card" id="dlQueueCard" style="display:none">
-      <div class="card-title">Cola de descarga · <span id="dlQueueInfo"></span></div>
+      <div class="card-title">Cola · <span id="dlQueueInfo"></span></div>
       <div class="dl-grid" id="dlGrid"></div>
     </div>
-
-  </div><!-- /panelDownload -->
-
+  </div>
 </main>
+
+<!-- Debug modal -->
+<div class="modal-overlay" id="debugModal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <span id="modalTitle">HTML del tema</span>
+      <button onclick="closeModal()" style="height:28px;padding:0 10px">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
 
 <footer>scraper no oficial · datos © todotango.com · uso personal</footer>
 
 <script>
 // ════════════════════════════════════
-//   CONSTANTES
+//  CONFIG
 // ════════════════════════════════════
-const PROXY = 'https://script.google.com/macros/s/AKfycbxIsEvw08ZJK92yiBZhOf0U4MlwdbH7ujlzl73fSnrRuCDeUFbDFvUbhCmAVZ-kmte5/exec?url=';
-const CDN   = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
-
-const GENRE_SLUG = {
-  '0': 'todos', '1': 'Canci%c3%b3n', '2': 'Folklore',
-  '3': 'Foxtrot', '4': 'Milonga', '5': 'Otros%20ritmos',
-  '6': 'Poema', '7': 'Tango', '8': 'Vals'
-};
-
-const ALPHABET = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
-                  'n','o','p','q','r','s','t','u','v','w','y','z'];
+const PROXY   = 'https://script.google.com/macros/s/AKfycbxIsEvw08ZJK92yiBZhOf0U4MlwdbH7ujlzl73fSnrRuCDeUFbDFvUbhCmAVZ-kmte5/exec?url=';
+const CDN_OGG = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
+const ALPHABET = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','y','z'];
+const GENRE_SLUG = { '0':'todos','1':'Canci%c3%b3n','2':'Folklore','3':'Foxtrot','4':'Milonga','5':'Otros%20ritmos','6':'Poema','7':'Tango','8':'Vals' };
 
 // ════════════════════════════════════
-//   ESTADO
+//  ESTADO
 // ════════════════════════════════════
-let allData      = [];
-let selected     = new Set();   // IDs seleccionados
-let currentPage  = 1;
-const PAGE_SIZE  = 50;
-let running      = false;
-let abortFlag    = false;
-let dlAbort      = false;
-let dlQueue      = [];
+let allData     = [];
+let selected    = new Set();
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let running     = false;
+let abortFlag   = false;
+let dlAbort     = false;
+let dlQueue     = [];
 
 // ════════════════════════════════════
-//   TABS
-// ════════════════════════════════════
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelector(`.tab[onclick*="${name}"]`).classList.add('active');
-  document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-}
-
-// ════════════════════════════════════
-//   PROXY FETCH
+//  PROXY
 // ════════════════════════════════════
 async function proxyFetch(url) {
-  const r = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
+  const r = await fetch(PROXY + encodeURIComponent(url), { cache:'no-store' });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const d = await r.json();
   if (d.error) throw new Error(d.error);
@@ -501,74 +338,75 @@ async function proxyFetch(url) {
 }
 
 // ════════════════════════════════════
-//   EXTRACCIÓN DE LISTA
+//  TABS
+// ════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  $('panel' + name[0].toUpperCase() + name.slice(1)).classList.add('active');
+}
+
+// ════════════════════════════════════
+//  FETCH LISTA DE TEMAS
 // ════════════════════════════════════
 async function fetchLetter(letter, generoId) {
   const genre = GENRE_SLUG[generoId] || 'todos';
-  // URL real de todotango para listado de letras
-  const url = `https://www.todotango.com/musica/obras/letras/${letter}/0/${genre}`;
-  addLog('info', `GET ${url}`);
+  const url   = `https://www.todotango.com/musica/obras/letras/${letter}/0/${genre}`;
+  addLog('info', `Fetching: ${url}`);
 
   let html;
   try { html = await proxyFetch(url); }
-  catch(e) { addLog('err', `Error: ${e.message}`); return []; }
-
-  if (!html) { addLog('err', 'HTML vacío'); return []; }
+  catch(e) { addLog('err', `Proxy error: ${e.message}`); return []; }
+  if (!html) { addLog('err', 'Respuesta vacía'); return []; }
   addLog('ok', `HTML recibido: ${html.length} chars`);
 
   const items = [];
   const seen  = new Set();
 
-  // ── Patrón 1: href con title="Titulo (Género)" ──
-  // Ej: href="https://www.todotango.com/musica/tema/1234/Mi-Tango/" ... title="Mi Tango (Tango)"
+  // Patrón 1: href con title="Titulo (Género)" — el más limpio
   const re1 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]*?)"[^>]*title="([^"(]+)\(([^)]+)\)"/g;
   let m;
   while ((m = re1.exec(html)) !== null) {
     const id = parseInt(m[2]);
     if (!seen.has(id)) {
       seen.add(id);
-      items.push({ id, titulo: m[3].trim(), genero: m[4].trim(), url: m[1], musica:'', letra:'', anio:'' });
+      items.push({ id, titulo:m[3].trim(), genero:m[4].trim(), url:m[1], musica:'', letra:'', anio:'', audioId:null });
     }
   }
 
-  // ── Patrón 2: <a href="...tema/ID/slug/">Título</a> (Género) ──
-  if (items.length === 0) {
-    const re2 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]*?)"[^>]*>([^<]+)<\/a>\s*[\(\[]\s*([^\)\]]+)\s*[\)\]]/g;
+  // Patrón 2: link seguido de (Género)
+  if (!items.length) {
+    const re2 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]*?)"[^>]*>([^<]+)<\/a>[^(]*\(([^)]+)\)/g;
     while ((m = re2.exec(html)) !== null) {
       const id = parseInt(m[2]);
       if (!seen.has(id)) {
         seen.add(id);
-        items.push({ id, titulo: m[3].trim(), genero: m[4].trim(), url: m[1], musica:'', letra:'', anio:'' });
+        items.push({ id, titulo:m[3].trim(), genero:m[4].trim(), url:m[1], musica:'', letra:'', anio:'', audioId:null });
       }
     }
   }
 
-  // ── Patrón 3: solo href (sin género en el link, lo tomamos de contexto) ──
-  if (items.length === 0) {
+  // Patrón 3: solo href (sin género explícito)
+  if (!items.length) {
     const re3 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/([^"\/]+)\/)"/g;
     while ((m = re3.exec(html)) !== null) {
       const id = parseInt(m[2]);
       if (!seen.has(id)) {
         seen.add(id);
         const titulo = decodeURIComponent(m[3].replace(/-/g,' ')).replace(/\b\w/g,c=>c.toUpperCase());
-        items.push({ id, titulo, genero:'', url: m[1], musica:'', letra:'', anio:'' });
+        items.push({ id, titulo, genero:'', url:m[1], musica:'', letra:'', anio:'', audioId:null });
       }
     }
   }
 
-  addLog(items.length ? 'ok' : 'err', `Encontrados: ${items.length} temas`);
-
-  // Si aún 0, volcamos un fragmento del HTML para diagnosticar
-  if (items.length === 0) {
-    const snippet = html.slice(0, 2000).replace(/\s+/g,' ');
-    addLog('info', 'HTML snippet: ' + snippet.slice(0,400));
-  }
-
+  addLog(items.length ? 'ok' : 'warn', `Temas encontrados: ${items.length}`);
+  if (!items.length) addLog('warn', 'HTML snippet: ' + html.slice(0,300).replace(/\s+/g,' '));
   return items;
 }
 
 // ════════════════════════════════════
-//   ENRIQUECIMIENTO
+//  ENRIQUECIMIENTO + EXTRACCIÓN ID AUDIO
 // ════════════════════════════════════
 async function enrichItem(item) {
   let html;
@@ -576,55 +414,124 @@ async function enrichItem(item) {
   catch(e) { return; }
   if (!html) return;
 
-  // Año — busca 4 dígitos cerca de palabras clave de género
-  const ym = html.match(/(?:Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)[^<]{0,40}?(\b1[89]\d{2}\b|\b20[012]\d\b)/i)
+  // ── ID de audio OGG ──
+  // Probamos todos los patrones conocidos de todotango
+  const audioPatterns = [
+    // URL directa al CDN
+    /sbits[^"'\s]*?\/(\d+)\.ogg/i,
+    /todotango\/ogg\/(\d+)/i,
+    // Variables JS / data attributes
+    /idsonido["'\s]*[:=]["'\s]*(\d+)/i,
+    /soundid["'\s]*[:=]["'\s]*(\d+)/i,
+    /audioid["'\s]*[:=]["'\s]*(\d+)/i,
+    /data-id=["'](\d+)["'][^>]*(?:ogg|audio|sound|player)/i,
+    /(?:ogg|audio|sound|player)[^>]*data-id=["'](\d+)["']/i,
+    // Llamadas a funciones JS
+    /EscucharTema\s*\(\s*(\d+)/i,
+    /PlayTema\s*\(\s*(\d+)/i,
+    /ReproducirTema\s*\(\s*(\d+)/i,
+    /reproducir\s*\(\s*(\d+)/i,
+    /playAudio\s*\(\s*(\d+)/i,
+    /playerInit\s*\(\s*(\d+)/i,
+    // Inputs hidden con nombres relacionados
+    /<input[^>]*(?:name|id)=["'][^"']*(?:sonido|audio|sound|ogg|idS)[^"']*["'][^>]*value=["'](\d+)["']/i,
+    /<input[^>]*value=["'](\d+)["'][^>]*(?:name|id)=["'][^"']*(?:sonido|audio|sound|ogg|idS)[^"']*["']/i,
+    // ViewState puede tener el ID, pero también puede estar en JSON embebido
+    /["']idSonido["']\s*:\s*(\d+)/i,
+    /["']audioFile["']\s*:\s*["'][^"']*?(\d+)\.ogg["']/i,
+  ];
+
+  for (const pat of audioPatterns) {
+    const mm = html.match(pat);
+    if (mm && mm[1]) {
+      item.audioId = parseInt(mm[1]);
+      break;
+    }
+  }
+
+  // ── Año ──
+  const ym = html.match(/(?:Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)[^<]{0,60}?(\b1[89]\d{2}\b|\b20[012]\d\b)/i)
           || html.match(/(\b1[89]\d{2}\b|\b20[012]\d\b)/);
   if (ym) item.anio = ym[1];
 
-  // Música — varias formas que usa el sitio
-  const mmPatterns = [
-    /Música[^<]*<a[^>]+>([^<]+)<\/a>/i,
-    /M[uú]sica[^:]*:\s*([^<\n]+?)(?:<|$)/i,
-    /class="[^"]*musica[^"]*"[^>]*>([^<]+)/i,
-  ];
-  for (const p of mmPatterns) {
-    const mm = html.match(p);
-    if (mm && mm[1].trim().length > 1) { item.musica = mm[1].trim(); break; }
-  }
+  // ── Músico ──
+  const mm2 = html.match(/M[uú]sica[^<]*<a[^>]+>([^<]+)<\/a>/i)
+           || html.match(/M[uú]sica[^:]*:\s*<[^>]+>([^<]+)<\//i)
+           || html.match(/M[uú]sica[^:]*:\s*([^<\n]{2,60}?)(?:<|\n)/i);
+  if (mm2) item.musica = mm2[1].trim();
 
-  // Letra — varias formas
-  const lmPatterns = [
-    /Letra[^<]*<a[^>]+>([^<]+)<\/a>/i,
-    /Letra[^:]*:\s*([^<\n]+?)(?:<|$)/i,
-    /class="[^"]*letra[^"]*"[^>]*>([^<]+)/i,
-  ];
-  for (const p of lmPatterns) {
-    const lm = html.match(p);
-    if (lm && lm[1].trim().length > 1) { item.letra = lm[1].trim(); break; }
-  }
+  // ── Letrista ──
+  const lm = html.match(/Letra[^<]*<a[^>]+>([^<]+)<\/a>/i)
+           || html.match(/Letra[^:]*:\s*<[^>]+>([^<]+)<\//i)
+           || html.match(/Letra[^:]*:\s*([^<\n]{2,60}?)(?:<|\n)/i);
+  if (lm) item.letra = lm[1].trim();
 
-  // Género — si venía vacío, intentamos sacarlo
+  // ── Género (si venía vacío) ──
   if (!item.genero) {
-    const gm = html.match(/<h[1-4][^>]*>\s*(Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)\s*</i);
-    if (gm) item.genero = gm[1];
+    const gm = html.match(/class="[^"]*genero[^"]*"[^>]*>([^<]+)/i)
+            || html.match(/<h[1-4][^>]*>\s*(Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)\s*</i);
+    if (gm) item.genero = gm[1].trim();
   }
 }
 
 // ════════════════════════════════════
-//   ORCHESTRATION
+//  DEBUG: ver HTML crudo de un tema
+// ════════════════════════════════════
+async function showDebugPage() {
+  const url = prompt('URL del tema a inspeccionar:', 'https://www.todotango.com/musica/tema/926/A-la-gran-muneca/');
+  if (!url) return;
+  $('modalTitle').textContent = 'Cargando…';
+  $('modalBody').textContent  = '';
+  $('debugModal').style.display = 'flex';
+  try {
+    const html = await proxyFetch(url);
+    // Buscar todas las coincidencias de audio
+    const audioHints = [];
+    const pats = [
+      /sbits[^\s"'<>]{0,80}/gi,
+      /\.ogg[^\s"'<>]{0,20}/gi,
+      /ogg[^\s"'<>]{0,60}/gi,
+      /sonido[^\s"'<>]{0,60}/gi,
+      /EscucharTema[^\s"'<>)]{0,60}/gi,
+      /PlayTema[^\s"'<>)]{0,60}/gi,
+      /audio[^\s"'<>]{0,60}/gi,
+      /player[^\s"'<>]{0,60}/gi,
+      /idS[^\s"'<>]{0,40}/gi,
+    ];
+    for (const p of pats) {
+      const mm = [...html.matchAll(p)];
+      mm.forEach(m => audioHints.push(m[0]));
+    }
+    $('modalTitle').textContent = `Debug: ${url} (${html.length} chars)`;
+    $('modalBody').textContent =
+      '=== PISTAS DE AUDIO ===\n' +
+      (audioHints.length ? [...new Set(audioHints)].join('\n') : '(ninguna)') +
+      '\n\n=== HTML COMPLETO (primeros 8000 chars) ===\n' +
+      html.slice(0, 8000);
+  } catch(e) {
+    $('modalBody').textContent = 'Error: ' + e.message;
+  }
+}
+function closeModal() { $('debugModal').style.display='none'; }
+
+// ════════════════════════════════════
+//  ORCHESTRATION
 // ════════════════════════════════════
 async function startScrape() {
   if (running) return;
   running = true; abortFlag = false;
   allData = []; selected.clear(); currentPage = 1;
 
-  setUI(true);
-  showEl('progressWrap');
-  showEl('debugLog');
-  hideEl('statsRow'); hideEl('filterRow'); hideEl('exportRow');
-  hideEl('tableWrap');
-  showEl('emptyMsg');
-  setEmptyMsg('♩', 'Extrayendo…');
+  $('btnScrape').disabled = true;
+  $('btnStop').style.display = '';
+  $('progressWrap').style.display = 'block';
+  $('debugLog').style.display = '';
+  $('statsRow').style.display = 'none';
+  $('filterRow').style.display = 'none';
+  $('exportRow').style.display = 'none';
+  $('tableWrap').style.display = 'none';
+  $('emptyMsg').style.display = '';
+  $('emptyMsg').innerHTML = '<div class="empty-icon">♩</div>Extrayendo…';
   setProgress(0);
 
   const letraVal = $('selLetra').value;
@@ -633,68 +540,66 @@ async function startScrape() {
 
   for (let li = 0; li < letters.length; li++) {
     if (abortFlag) break;
-    const l = letters[li];
-    setStatus(`Letra "${l.toUpperCase()}" (${li+1}/${letters.length})`);
-    const items = await fetchLetter(l, generoId);
+    setStatus(`Letra "${letters[li].toUpperCase()}" (${li+1}/${letters.length})`);
+    const items = await fetchLetter(letters[li], generoId);
     allData.push(...items);
-    updateStats();
-    setProgress(Math.round((li+1) / letters.length * 65));
-    if (allData.length > 0) showResults();
-    renderTable();
-    if (letters.length > 1) await sleep(700);
+    if (allData.length) showResults();
+    renderTable(); updateStats();
+    setProgress(Math.round((li+1)/letters.length * 55));
+    if (letters.length > 1) await sleep(600);
   }
 
-  if (allData.length > 0) showResults();
-  renderTable();
+  showResults(); renderTable(); updateStats();
 
-  // Enriquecimiento opcional
-  if ($('chkEnrich').checked && allData.length > 0) {
-    setStatus(`${allData.length} temas. Enriqueciendo detalles…`);
-    const toEnrich = allData.slice(0, 60);
-    for (let i = 0; i < toEnrich.length; i++) {
+  // Enriquecimiento
+  if ($('chkEnrich').checked && allData.length) {
+    setStatus(`${allData.length} temas. Extrayendo ID de audio y metadatos…`);
+    // Enriquecer TODOS (con pausa para no saturar)
+    for (let i = 0; i < allData.length; i++) {
       if (abortFlag) break;
-      await enrichItem(toEnrich[i]);
-      setProgress(65 + Math.round((i+1) / toEnrich.length * 33));
-      if (i % 5 === 0) renderTable();
-      await sleep(300);
+      await enrichItem(allData[i]);
+      setProgress(55 + Math.round((i+1)/allData.length * 43));
+      if (i % 3 === 0) { renderTable(); updateStats(); }
+      await sleep(350);
     }
-    renderTable();
-    updateStats();
   }
 
+  renderTable(); updateStats();
   setProgress(100);
-  setStatus(`✓ ${allData.length} temas. Podés filtrar y exportar.`);
-  setUI(false);
+  const conAudio = allData.filter(x => x.audioId).length;
+  setStatus(`✓ ${allData.length} temas — ${conAudio} con audio disponible.`);
+  $('btnScrape').disabled = false;
+  $('btnStop').style.display = 'none';
   running = false;
 }
 
 function stopScrape() {
   abortFlag = true;
   setStatus('Deteniendo…');
-  hideEl('btnStop');
+  $('btnStop').style.display = 'none';
 }
 
 // ════════════════════════════════════
-//   TABLA
+//  TABLA
 // ════════════════════════════════════
 function getFiltered() {
-  const txt  = ($('filterText').value || '').toLowerCase();
-  const gen  = ($('filterGenero').value || '').toLowerCase();
-  const sort = $('sortBy').value;
+  const txt   = ($('filterText').value||'').toLowerCase();
+  const gen   = ($('filterGenero').value||'').toLowerCase();
+  const audio = $('filterAudio').value;
+  const sort  = $('sortBy').value;
 
   let data = allData.filter(x => {
-    const mt = !txt || x.titulo.toLowerCase().includes(txt)
-            || (x.musica||'').toLowerCase().includes(txt)
-            || (x.letra||'').toLowerCase().includes(txt);
-    const mg = !gen || (x.genero||'').toLowerCase().includes(gen);
-    return mt && mg;
+    const mt = !txt || x.titulo.toLowerCase().includes(txt) || (x.musica||'').toLowerCase().includes(txt) || (x.letra||'').toLowerCase().includes(txt);
+    const mg = !gen  || (x.genero||'').toLowerCase().includes(gen);
+    const ma = !audio || (audio==='yes' ? x.audioId : !x.audioId);
+    return mt && mg && ma;
   });
 
   data.sort((a,b) => {
-    if (sort === 'titulo') return a.titulo.localeCompare(b.titulo, 'es');
-    if (sort === 'anio')   return (parseInt(a.anio)||9999) - (parseInt(b.anio)||9999);
-    if (sort === 'genero') return (a.genero||'').localeCompare(b.genero||'', 'es');
-    if (sort === 'id')     return a.id - b.id;
+    if (sort==='titulo') return a.titulo.localeCompare(b.titulo,'es');
+    if (sort==='anio')   return (parseInt(a.anio)||9999)-(parseInt(b.anio)||9999);
+    if (sort==='genero') return (a.genero||'').localeCompare(b.genero||'','es');
+    if (sort==='id')     return a.id-b.id;
     return 0;
   });
   return data;
@@ -703,164 +608,135 @@ function getFiltered() {
 function renderTable() {
   const filtered = getFiltered();
   const total    = filtered.length;
-  const pages    = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pages    = Math.max(1, Math.ceil(total/PAGE_SIZE));
   if (currentPage > pages) currentPage = 1;
-
   const slice = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
 
-  $('tbody').innerHTML = slice.map(x => `
-    <tr>
-      <td class="col-sel"><input type="checkbox" data-id="${x.id}"
-          ${selected.has(x.id)?'checked':''} onchange="toggleSel(${x.id}, this.checked)"></td>
-      <td class="col-titulo" title="${esc(x.titulo)}">
-        <a href="${x.url}" target="_blank">${esc(x.titulo)}</a></td>
+  $('tbody').innerHTML = slice.map(x => {
+    const hasAudio = x.audioId != null;
+    const dlBtn = hasAudio
+      ? `<a href="${CDN_OGG}${x.audioId}.ogg" download="${esc(x.titulo)}.ogg" title="Descargar OGG" style="font-size:16px;text-decoration:none;color:var(--green-text)">↓</a>`
+      : `<span style="color:var(--text3);font-size:11px">—</span>`;
+    return `<tr class="${hasAudio?'has-audio':''}">
+      <td class="col-sel"><input type="checkbox" data-id="${x.id}" ${selected.has(x.id)?'checked':''} onchange="toggleSel(${x.id},this.checked)"></td>
+      <td class="col-titulo" title="${esc(x.titulo)}"><a href="${x.url}" target="_blank">${esc(x.titulo)}</a></td>
       <td class="col-genero"><span class="badge ${bc(x.genero)}">${esc(x.genero||'—')}</span></td>
       <td class="col-anio">${x.anio||'—'}</td>
       <td class="col-musica" title="${esc(x.musica)}">${esc(x.musica||'—')}</td>
       <td class="col-letra"  title="${esc(x.letra)}">${esc(x.letra||'—')}</td>
-      <td class="col-id" style="color:var(--text3)">${x.id}</td>
-      <td class="col-dl" style="text-align:center">
-        <a href="${CDN}${x.id}.ogg" download="${esc(x.titulo)}.ogg"
-           title="Descargar OGG" style="font-size:16px;text-decoration:none">↓</a>
-      </td>
-    </tr>`).join('');
+      <td class="col-id"  style="color:var(--text3)">${x.id}</td>
+      <td class="col-oid" style="color:${x.audioId?'var(--green-text)':'var(--text3)'}">${x.audioId||'—'}</td>
+      <td class="col-dl">${dlBtn}</td>
+    </tr>`;
+  }).join('');
 
   $('pageInfo').textContent = `Pág ${currentPage}/${pages} · ${total} resultados`;
   $('pagination').style.display = total > PAGE_SIZE ? 'flex' : 'none';
-  $('exportInfo').textContent = `${selected.size} seleccionados · ${total} filtrados · ${allData.length} total`;
+  $('exportInfo').textContent = `${selected.size} sel · ${total} filtrados · ${allData.length} total`;
   $('chkAll').indeterminate = selected.size > 0 && selected.size < allData.length;
-  $('chkAll').checked = selected.size === allData.length && allData.length > 0;
+  $('chkAll').checked = selected.size > 0 && selected.size === allData.length;
 }
 
-function toggleSel(id, on) {
-  on ? selected.add(id) : selected.delete(id);
-  renderTable();
-}
-
-function toggleAll(on) {
-  getFiltered().forEach(x => on ? selected.add(x.id) : selected.delete(x.id));
-  renderTable();
-}
-
-function selectAll(on) {
-  allData.forEach(x => on ? selected.add(x.id) : selected.delete(x.id));
-  renderTable();
-}
+function toggleSel(id,on) { on ? selected.add(id) : selected.delete(id); renderTable(); }
+function toggleAll(on) { getFiltered().forEach(x => on ? selected.add(x.id) : selected.delete(x.id)); renderTable(); }
+function selectAll(on) { allData.forEach(x => on ? selected.add(x.id) : selected.delete(x.id)); renderTable(); }
+function selectAudioOnly() { allData.forEach(x => x.audioId ? selected.add(x.id) : selected.delete(x.id)); renderTable(); }
 
 function changePage(dir) {
-  const pages = Math.ceil(getFiltered().length / PAGE_SIZE);
-  currentPage = Math.max(1, Math.min(pages, currentPage + dir));
+  const pages = Math.ceil(getFiltered().length/PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(pages, currentPage+dir));
   renderTable();
 }
 
 // ════════════════════════════════════
-//   DOWNLOAD PANEL
+//  DOWNLOAD
 // ════════════════════════════════════
 function sendToDownload() {
-  const ids = [...selected];
-  if (ids.length === 0) { alert('Seleccioná al menos un tema.'); return; }
+  const ids = [...selected].map(id => allData.find(x=>x.id===id)).filter(x=>x&&x.audioId).map(x=>x.audioId);
+  if (!ids.length) { alert('Ningún tema seleccionado tiene ID de audio. Enriquecé primero (checkbox "Extraer ID audio").'); return; }
   $('manualIds').value = ids.join(', ');
-  switchTab('download');
+  // Switch tab
+  document.querySelectorAll('.tab')[1].click();
 }
 
 async function startDownload() {
   if (running) return;
   dlAbort = false;
   $('btnDownload').disabled = true;
-  showEl('btnDlStop');
+  $('btnDlStop').style.display = '';
 
-  // Construir cola
-  let ids = [];
+  // Armar IDs
+  let audioIds = [];
   const manual = $('manualIds').value.trim();
   if (manual) {
-    ids = manual.split(/[,\s]+/).map(s => parseInt(s)).filter(n => !isNaN(n));
+    audioIds = manual.split(/[,\s]+/).map(s=>parseInt(s)).filter(n=>!isNaN(n)&&n>0);
   } else {
-    ids = allData.map(x => x.id);
+    audioIds = allData.filter(x=>x.audioId).map(x=>x.audioId);
   }
 
-  if (ids.length === 0) {
-    alert('No hay IDs. Extraé datos primero o ingresá IDs manualmente.');
-    $('btnDownload').disabled = false;
-    hideEl('btnDlStop');
-    return;
-  }
+  if (!audioIds.length) { alert('No hay IDs de audio. Extraé los datos primero.'); $('btnDownload').disabled=false; $('btnDlStop').style.display='none'; return; }
 
-  // Armar queue
-  dlQueue = ids.map(id => {
-    const item = allData.find(x => x.id === id) || { id, titulo: `Tema ${id}`, genero:'', anio:'' };
-    return { ...item, dlStatus: 'wait' };
+  // Armar cola con metadata
+  dlQueue = audioIds.map(audioId => {
+    const item = allData.find(x=>x.audioId===audioId) || { titulo:`Tema ${audioId}`, genero:'', anio:'' };
+    return { audioId, titulo:item.titulo, genero:item.genero, anio:item.anio, dlStatus:'wait' };
   });
 
   renderDlGrid();
-  showEl('dlQueueCard');
+  $('dlQueueCard').style.display = '';
 
-  const concurrency = parseInt($('concurrency').value) || 3;
+  const concurrency = Math.max(1, Math.min(6, parseInt($('concurrency').value)||3));
   let done = 0;
   const total = dlQueue.length;
-
   $('dlStatus').textContent = `Descargando ${total} archivos (${concurrency} simultáneos)…`;
 
-  // Pool de concurrencia
-  const pool = [];
   let qIdx = 0;
-
   async function worker() {
     while (qIdx < dlQueue.length && !dlAbort) {
-      const idx = qIdx++;
+      const idx  = qIdx++;
       const item = dlQueue[idx];
       item.dlStatus = 'loading';
       updateDlItem(idx);
-
       try {
-        const url  = `${CDN}${item.id}.ogg`;
+        const url  = `${CDN_OGG}${item.audioId}.ogg`;
         const resp = await fetch(url);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const blob = await resp.blob();
-        const a    = document.createElement('a');
-        a.href     = URL.createObjectURL(blob);
-        a.download = `${item.id} - ${item.titulo || 'tango'}.ogg`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${item.audioId} - ${(item.titulo||'tango').replace(/[<>:"/\\|?*]/g,'')}.ogg`;
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 3000);
         item.dlStatus = 'ok';
       } catch(e) {
-        item.dlStatus = 'err';
-        item.dlError  = e.message;
+        item.dlStatus = 'err'; item.dlError = e.message;
       }
-
       done++;
       updateDlItem(idx);
-      const pct = Math.round(done / total * 100);
-      $('dlProgressFill').style.width = pct + '%';
-      $('dlQueueInfo').textContent = `${done}/${total} · ${dlQueue.filter(x=>x.dlStatus==='ok').length} OK`;
-      $('dlStatus').textContent = `${done}/${total} descargados`;
-
-      // Pequeña pausa para no saturar
-      await sleep(200);
+      $('dlProgressFill').style.width = Math.round(done/total*100)+'%';
+      $('dlQueueInfo').textContent = `${done}/${total} · OK:${dlQueue.filter(x=>x.dlStatus==='ok').length} ERR:${dlQueue.filter(x=>x.dlStatus==='err').length}`;
+      $('dlStatus').textContent = `${done}/${total} procesados`;
+      await sleep(150);
     }
   }
 
-  for (let i = 0; i < concurrency; i++) pool.push(worker());
+  const pool = [];
+  for (let i=0;i<concurrency;i++) pool.push(worker());
   await Promise.all(pool);
 
-  const ok  = dlQueue.filter(x => x.dlStatus === 'ok').length;
-  const err = dlQueue.filter(x => x.dlStatus === 'err').length;
-  $('dlStatus').textContent = `✓ Listo: ${ok} descargados, ${err} errores.`;
-  $('btnDownload').disabled = false;
-  hideEl('btnDlStop');
+  const ok  = dlQueue.filter(x=>x.dlStatus==='ok').length;
+  const err = dlQueue.filter(x=>x.dlStatus==='err').length;
+  $('dlStatus').textContent = `✓ Listo: ${ok} descargados${err?', '+err+' errores':''}`;
+  $('btnDownload').disabled=false; $('btnDlStop').style.display='none';
 }
 
-function stopDownload() {
-  dlAbort = true;
-  $('dlStatus').textContent = 'Deteniendo…';
-  hideEl('btnDlStop');
-}
+function stopDownload() { dlAbort=true; $('dlStatus').textContent='Deteniendo…'; $('btnDlStop').style.display='none'; }
 
 function renderDlGrid() {
-  $('dlGrid').innerHTML = dlQueue.map((item, i) => `
+  $('dlGrid').innerHTML = dlQueue.map((item,i)=>`
     <div class="dl-item" id="dlitem-${i}">
       <div class="dl-title">${esc(item.titulo)}</div>
-      <div class="dl-meta">ID: ${item.id} · ${esc(item.genero||'—')} ${item.anio?'· '+item.anio:''}</div>
+      <div class="dl-meta">OGG ID: ${item.audioId} · ${esc(item.genero||'—')}${item.anio?' · '+item.anio:''}</div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
         <span class="dl-status-badge ds-wait" id="dsbadge-${i}">En cola</span>
         <div class="dl-progress-bar" style="flex:1"><div class="dl-progress-fill" id="dpbar-${i}" style="width:0%"></div></div>
@@ -869,111 +745,75 @@ function renderDlGrid() {
 }
 
 function updateDlItem(i) {
-  const item   = dlQueue[i];
-  const badge  = document.getElementById(`dsbadge-${i}`);
-  const bar    = document.getElementById(`dpbar-${i}`);
+  const item  = dlQueue[i];
+  const badge = document.getElementById(`dsbadge-${i}`);
+  const bar   = document.getElementById(`dpbar-${i}`);
   if (!badge) return;
-  const map = { wait:'ds-wait', loading:'ds-loading', ok:'ds-ok', err:'ds-err' };
-  const lbl = { wait:'En cola', loading:'Descargando…', ok:'✓ OK', err:'✗ Error' };
-  badge.className = `dl-status-badge ${map[item.dlStatus]}`;
+  const cls = {wait:'ds-wait',loading:'ds-loading',ok:'ds-ok',err:'ds-err'};
+  const lbl = {wait:'En cola',loading:'Descargando…',ok:'✓ OK',err:'✗ Error'};
+  badge.className = `dl-status-badge ${cls[item.dlStatus]}`;
   badge.textContent = lbl[item.dlStatus];
-  if (item.dlStatus === 'ok')      bar.style.width = '100%';
-  else if (item.dlStatus === 'err') { bar.style.background = 'var(--red-text)'; bar.style.width = '100%'; }
+  if (item.dlStatus==='ok') { bar.style.width='100%'; }
+  if (item.dlStatus==='err') { bar.style.background='var(--red-text)'; bar.style.width='100%'; bar.title=item.dlError||''; }
 }
 
 // ════════════════════════════════════
-//   EXPORT
+//  EXPORT
 // ════════════════════════════════════
 function exportCSV() {
   const data = getFiltered();
-  const rows = [['ID','Título','Género','Año','Música','Letra','URL OGG','URL Página']];
-  data.forEach(x => rows.push([
-    x.id, x.titulo, x.genero, x.anio, x.musica, x.letra,
-    `${CDN}${x.id}.ogg`, x.url
-  ]));
-  download(rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n'),
-    'todotango.csv', 'text/csv;charset=utf-8;');
+  const rows = [['ID Tema','Título','Género','Año','Música','Letra','ID Audio OGG','URL Audio','URL Página']];
+  data.forEach(x => rows.push([x.id,x.titulo,x.genero,x.anio,x.musica,x.letra,x.audioId||'',x.audioId?`${CDN_OGG}${x.audioId}.ogg`:'',x.url]));
+  dlFile(rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n'),'todotango.csv','text/csv;charset=utf-8;');
 }
-
 function exportJSON() {
-  const data = getFiltered().map(x => ({ ...x, ogg: `${CDN}${x.id}.ogg` }));
-  download(JSON.stringify(data, null, 2), 'todotango.json', 'application/json');
+  dlFile(JSON.stringify(getFiltered().map(x=>({...x,audioUrl:x.audioId?`${CDN_OGG}${x.audioId}.ogg`:null})),null,2),'todotango.json','application/json');
 }
-
-function download(content, filename, mime) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+content], { type: mime }));
-  a.download = filename; a.click();
+function dlFile(content,name,mime) {
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+content],{type:mime}));
+  a.download=name; a.click();
 }
 
 // ════════════════════════════════════
-//   HELPERS UI
+//  HELPERS
 // ════════════════════════════════════
-function $(id) { return document.getElementById(id); }
-function showEl(id) { $(id).style.display=''; }
-function hideEl(id) { $(id).style.display='none'; }
-
-function setUI(on) {
-  $('btnScrape').disabled = on;
-  $('btnStop').style.display = on ? '' : 'none';
+function $(id){ return document.getElementById(id); }
+function setProgress(p){ $('progressFill').style.width=p+'%'; }
+function setStatus(msg){ $('statusMsg').textContent=msg; }
+function showResults(){
+  $('emptyMsg').style.display='none'; $('tableWrap').style.display='';
+  $('statsRow').style.display='grid'; $('filterRow').style.display='flex'; $('exportRow').style.display='flex';
 }
-
-function setProgress(p) { $('progressFill').style.width = p + '%'; }
-function setStatus(msg)  { $('statusMsg').textContent = msg; }
-
-function setEmptyMsg(icon, msg) {
-  $('emptyMsg').innerHTML = `<div class="empty-icon">${icon}</div>${msg}`;
-}
-
-function showResults() {
-  hideEl('emptyMsg');
-  showEl('tableWrap');
-  $('statsRow').style.display = 'grid';
-  $('filterRow').style.display = 'flex';
-  $('exportRow').style.display = 'flex';
-}
-
-function updateStats() {
+function updateStats(){
   const t    = allData.length;
-  const tang = allData.filter(x => /tango/i.test(x.genero)).length;
-  const vals = allData.filter(x => /vals/i.test(x.genero)).length;
-  const mil  = allData.filter(x => /milonga/i.test(x.genero)).length;
-  const poe  = allData.filter(x => /poema/i.test(x.genero)).length;
-  const otr  = t - tang - vals - mil - poe;
-  $('sTot').textContent = t;
-  $('sTan').textContent = tang;
-  $('sVal').textContent = vals;
-  $('sMil').textContent = mil;
-  $('sPoe').textContent = poe;
-  $('sOtr').textContent = Math.max(0, otr);
+  const tang = allData.filter(x=>/tango/i.test(x.genero)).length;
+  const vals = allData.filter(x=>/vals/i.test(x.genero)).length;
+  const mil  = allData.filter(x=>/milonga/i.test(x.genero)).length;
+  const poe  = allData.filter(x=>/poema/i.test(x.genero)).length;
+  const aud  = allData.filter(x=>x.audioId).length;
+  const otr  = Math.max(0, t-tang-vals-mil-poe);
+  $('sTot').textContent=t; $('sTan').textContent=tang; $('sVal').textContent=vals;
+  $('sMil').textContent=mil; $('sPoe').textContent=poe; $('sAud').textContent=aud; $('sOtr').textContent=otr;
 }
-
-function addLog(type, msg) {
-  const log = $('debugLog');
-  const el  = document.createElement('div');
-  el.className = `log-line log-${type}`;
-  el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-  log.appendChild(el);
-  log.scrollTop = log.scrollHeight;
+function addLog(type,msg){
+  const log=$('debugLog');
+  const el=document.createElement('div');
+  el.className=`log-line log-${type}`;
+  el.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.appendChild(el); log.scrollTop=log.scrollHeight;
 }
-
-function bc(g) {
-  if (!g) return 'b-other';
-  const l = g.toLowerCase();
-  if (l.includes('tango'))   return 'b-tango';
-  if (l.includes('vals'))    return 'b-vals';
-  if (l.includes('milonga')) return 'b-milonga';
-  if (l.includes('poema'))   return 'b-poema';
+function bc(g){
+  if(!g) return 'b-other';
+  const l=g.toLowerCase();
+  if(l.includes('tango'))   return 'b-tango';
+  if(l.includes('vals'))    return 'b-vals';
+  if(l.includes('milonga')) return 'b-milonga';
+  if(l.includes('poema'))   return 'b-poema';
   return 'b-other';
 }
-
-function esc(s) {
-  return String(s||'')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 </script>
 </body>
 </html>

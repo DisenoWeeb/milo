@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TodoTango Downloader</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #e94560;
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input[type="number"] {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+        input::placeholder { color: #888; }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #e94560;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover { background: #ff6b6b; transform: translateY(-2px); }
+        button:disabled { background: #555; cursor: not-allowed; transform: none; }
+        .log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .log .success { color: #4ecca3; }
+        .log .error { color: #e94560; }
+        .log .info { color: #f0a500; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .stat {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e94560;
+        }
+        .stat-label { color: #aaa; font-size: 12px; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .controls button {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .controls button.secondary {
+            background: rgba(255,255,255,0.1);
+        }
+        .controls button.secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .note {
+            color: #888;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 TodoTango Downloader</h1>
+        <p class="subtitle">Descarga canciones de todotango.com directamente desde tu navegador</p>
+
+        <div class="panel">
+            <div class="input-group">
+                <input type="number" id="startId" placeholder="ID inicial" value="2000" min="1">
+                <input type="number" id="endId" placeholder="ID final" value="2100" min="1">
+                <button onclick="startDownload()" id="btnStart">▶ Iniciar</button>
+            </div>
+            <div class="controls">
+                <button class="secondary" onclick="stopDownload()" id="btnStop" disabled>⏹ Detener</button>
+                <button class="secondary" onclick="clearLog()">🗑 Limpiar</button>
+                <button class="secondary" onclick="exportList()">📋 Exportar lista</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="statFound">0</div>
+                    <div class="stat-label">Encontradas</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="statDownloaded">0</div>
+                    <div class="stat-label">Descargadas</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="statFailed">0</div>
+                    <div class="stat-label">Fallidas</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="statProgress">0%</div>
+                    <div class="stat-label">Progreso</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="log" id="log"></div>
+            <p class="note">⚠️ Las canciones se descargan una por una para no saturar el servidor. Puedes detener en cualquier momento.</p>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
+        let isRunning = false;
+        let foundSongs = [];
+        let downloadedCount = 0;
+        let failedCount = 0;
+        let currentId = 0;
+        let abortController = null;
+
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('statFound').textContent = foundSongs.length;
+            document.getElementById('statDownloaded').textContent = downloadedCount;
+            document.getElementById('statFailed').textContent = failedCount;
+        }
+
+        function updateProgress(current, total) {
+            const pct = Math.round((current / total) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('statProgress').textContent = pct + '%';
+        }
+
+        async function checkSong(id) {
+            try {
+                const response = await fetch(`${BASE_URL}${id}.ogg`, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                // Con no-cors no podemos leer status, así que intentamos descargar directamente
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function downloadSong(id) {
+            try {
+                const link = document.createElement('a');
+                link.href = `${BASE_URL}${id}.ogg`;
+                link.download = `${id}.ogg`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function startDownload() {
+            if (isRunning) return;
+            
+            const startId = parseInt(document.getElementById('startId').value) || 1;
+            const endId = parseInt(document.getElementById('endId').value) || startId;
+            
+            if (startId > endId) {
+                log('Error: El ID inicial debe ser menor o igual al final', 'error');
+                return;
+            }
+
+            isRunning = true;
+            foundSongs = [];
+            downloadedCount = 0;
+            failedCount = 0;
+            
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            
+            log(`Iniciando descarga de IDs ${startId} a ${endId}...`, 'info');
+            
+            const total = endId - startId + 1;
+            
+            for (let id = startId; id <= endId && isRunning; id++) {
+                currentId = id;
+                updateProgress(id - startId + 1, total);
+                
+                try {
+                    // Intentar descargar directamente
+                    const success = await downloadSong(id);
+                    
+                    if (success) {
+                        foundSongs.push(id);
+                        downloadedCount++;
+                        log(`✓ ID ${id}: Descargando...`, 'success');
+                    } else {
+                        failedCount++;
+                        log(`✗ ID ${id}: No se pudo descargar`, 'error');
+                    }
+                } catch (e) {
+                    failedCount++;
+                    log(`✗ ID ${id}: Error - ${e.message}`, 'error');
+                }
+                
+                updateStats();
+                
+                // Esperar 1 segundo entre descargas
+                if (isRunning && id < endId) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            
+            isRunning = false;
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+            
+            log(`¡Proceso completado! ${downloadedCount} descargadas, ${failedCount} fallidas.`, 'info');
+        }
+
+        function stopDownload() {
+            isRunning = false;
+            log('Descarga detenida por el usuario.', 'info');
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function exportList() {
+            if (foundSongs.length === 0) {
+                log('No hay canciones para exportar.', 'error');
+                return;
+            }
+            
+            const content = foundSongs.map(id => `${BASE_URL}${id}.ogg`).join('\n');
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'todotango_urls.txt';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log(`Lista exportada: ${foundSongs.length} URLs`, 'success');
+        }
+
+        // Cargar desde URL params
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('start')) document.getElementById('startId').value = params.get('start');
+        if (params.has('end')) document.getElementById('endId').value = params.get('end');
+    </script>
+</body>
+</html>

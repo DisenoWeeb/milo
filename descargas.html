@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,7 +15,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         h1 {
@@ -39,10 +40,21 @@
             gap: 10px;
             margin-bottom: 15px;
             flex-wrap: wrap;
+            align-items: center;
         }
         input[type="number"] {
             flex: 1;
-            min-width: 120px;
+            min-width: 100px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+        }
+        input[type="text"] {
+            flex: 2;
+            min-width: 200px;
             padding: 12px 15px;
             border: none;
             border-radius: 8px;
@@ -63,11 +75,19 @@
         }
         button:hover { background: #ff6b6b; transform: translateY(-2px); }
         button:disabled { background: #555; cursor: not-allowed; transform: none; }
+        .btn-scan { background: #4ecca3; }
+        .btn-scan:hover { background: #3dbb94; }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
         .log {
             background: rgba(0,0,0,0.3);
             border-radius: 10px;
             padding: 15px;
-            height: 300px;
+            height: 350px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 13px;
@@ -76,6 +96,7 @@
         .log .success { color: #4ecca3; }
         .log .error { color: #e94560; }
         .log .info { color: #f0a500; }
+        .log .scan { color: #00d4ff; }
         .stats {
             display: flex;
             justify-content: space-around;
@@ -116,43 +137,109 @@
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
-        .controls button {
-            font-size: 14px;
-            padding: 8px 16px;
-        }
-        .controls button.secondary {
-            background: rgba(255,255,255,0.1);
-        }
-        .controls button.secondary:hover {
-            background: rgba(255,255,255,0.2);
-        }
         .note {
             color: #888;
             font-size: 13px;
             margin-top: 10px;
             text-align: center;
         }
+        .folder-tip {
+            background: rgba(78, 204, 163, 0.1);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #4ecca3;
+            font-size: 14px;
+        }
+        .folder-tip strong { color: #fff; }
+        .ranges-found {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .ranges-found h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .range-item {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 5px 15px;
+            margin: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .range-item:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: scale(1.05);
+        }
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: #aaa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mode-btn.active {
+            border-color: #e94560;
+            color: #fff;
+            background: rgba(233, 69, 96, 0.1);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎵 TodoTango Downloader</h1>
-        <p class="subtitle">Descarga canciones de todotango.com directamente desde tu navegador</p>
+        <p class="subtitle">Descarga canciones de todotango.com</p>
+
+        <div class="folder-tip">
+            <strong>💡 Tip:</strong> Los navegadores guardan en "Descargas" por defecto. Para cambiarlo:<br>
+            • <strong>Chrome/Edge:</strong> Configuración → Descargas → Ubicación → Elegir "Biblioteca de Tango"<br>
+            • <strong>Firefox:</strong> Preferencias → Archivos y Aplicaciones → Descargas → Preguntar siempre<br>
+            • O simplemente mueve los archivos después de descargar
+        </div>
 
         <div class="panel">
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('download')" id="modeDownload">⬇ Descargar</button>
+                <button class="mode-btn" onclick="setMode('scan')" id="modeScan">🔍 Escanear rangos</button>
+            </div>
+
             <div class="input-group">
-                <input type="number" id="startId" placeholder="ID inicial" value="2000" min="1">
-                <input type="number" id="endId" placeholder="ID final" value="2100" min="1">
-                <button onclick="startDownload()" id="btnStart">▶ Iniciar</button>
+                <input type="number" id="startId" placeholder="ID inicial" value="2020" min="1">
+                <input type="number" id="endId" placeholder="ID final" value="2050" min="1">
+                <input type="text" id="folderName" placeholder="Nombre de carpeta (ej: Biblioteca de Tango)" value="Biblioteca de Tango">
             </div>
+
             <div class="controls">
-                <button class="secondary" onclick="stopDownload()" id="btnStop" disabled>⏹ Detener</button>
-                <button class="secondary" onclick="clearLog()">🗑 Limpiar</button>
-                <button class="secondary" onclick="exportList()">📋 Exportar lista</button>
+                <button onclick="startAction()" id="btnStart">▶ Iniciar</button>
+                <button class="btn-secondary" onclick="stopAction()" id="btnStop" disabled>⏹ Detener</button>
+                <button class="btn-secondary" onclick="clearLog()">🗑 Limpiar</button>
+                <button class="btn-secondary" onclick="exportList()">📋 Exportar URLs</button>
+                <button class="btn-secondary" onclick="exportRanges()">📊 Exportar rangos encontrados</button>
             </div>
+
             <div class="progress-bar">
                 <div class="progress-fill" id="progressBar"></div>
             </div>
+
             <div class="stats">
                 <div class="stat">
                     <div class="stat-number" id="statFound">0</div>
@@ -164,18 +251,23 @@
                 </div>
                 <div class="stat">
                     <div class="stat-number" id="statFailed">0</div>
-                    <div class="stat-label">Fallidas</div>
+                    <div class="stat-label">Vacíos/Error</div>
                 </div>
                 <div class="stat">
                     <div class="stat-number" id="statProgress">0%</div>
                     <div class="stat-label">Progreso</div>
                 </div>
             </div>
+
+            <div class="ranges-found" id="rangesFound" style="display:none;">
+                <h3>🔍 Rangos con canciones encontrados:</h3>
+                <div id="rangesList"></div>
+            </div>
         </div>
 
         <div class="panel">
             <div class="log" id="log"></div>
-            <p class="note">⚠️ Las canciones se descargan una por una para no saturar el servidor. Puedes detener en cualquier momento.</p>
+            <p class="note">⚠️ El escaneo intenta descargar cada archivo y verifica el tamaño. Los archivos < 5KB se consideran vacíos.</p>
         </div>
     </div>
 
@@ -183,10 +275,18 @@
         const BASE_URL = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
         let isRunning = false;
         let foundSongs = [];
+        let validRanges = [];
         let downloadedCount = 0;
         let failedCount = 0;
-        let currentId = 0;
-        let abortController = null;
+        let currentMode = 'download';
+        let folderName = 'Biblioteca de Tango';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(mode === 'download' ? 'modeDownload' : 'modeScan').classList.add('active');
+            document.getElementById('btnStart').textContent = mode === 'download' ? '▶ Iniciar descarga' : '🔍 Escanear rangos';
+        }
 
         function log(message, type = 'info') {
             const logEl = document.getElementById('log');
@@ -204,44 +304,93 @@
         }
 
         function updateProgress(current, total) {
-            const pct = Math.round((current / total) * 100);
+            const pct = total > 0 ? Math.round((current / total) * 100) : 0;
             document.getElementById('progressBar').style.width = pct + '%';
             document.getElementById('statProgress').textContent = pct + '%';
         }
 
-        async function checkSong(id) {
-            try {
-                const response = await fetch(`${BASE_URL}${id}.ogg`, {
-                    method: 'HEAD',
-                    mode: 'no-cors'
-                });
-                // Con no-cors no podemos leer status, así que intentamos descargar directamente
-                return true;
-            } catch (e) {
-                return false;
+        function addRange(start, end, count) {
+            validRanges.push({ start, end, count });
+            updateRangesDisplay();
+        }
+
+        function updateRangesDisplay() {
+            const container = document.getElementById('rangesFound');
+            const list = document.getElementById('rangesList');
+            
+            if (validRanges.length > 0) {
+                container.style.display = 'block';
+                list.innerHTML = validRanges.map(r => 
+                    `<span class="range-item" onclick="setRange(${r.start}, ${r.end})" title="Click para usar este rango">
+                        ${r.start}-${r.end} (${r.count} canciones)
+                    </span>`
+                ).join('');
             }
         }
 
-        async function downloadSong(id) {
+        function setRange(start, end) {
+            document.getElementById('startId').value = start;
+            document.getElementById('endId').value = end;
+            log(`Rango seleccionado: ${start} - ${end}`, 'info');
+        }
+
+        async function checkFileSize(url) {
             try {
-                const link = document.createElement('a');
-                link.href = `${BASE_URL}${id}.ogg`;
-                link.download = `${id}.ogg`;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                return true;
+                const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                // Con no-cors no podemos leer headers, así que usamos otro método
+                return null;
             } catch (e) {
-                return false;
+                return null;
             }
         }
 
-        async function startDownload() {
+        async function tryDownloadAndCheck(id) {
+            return new Promise((resolve) => {
+                const url = `${BASE_URL}${id}.ogg`;
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.responseType = 'blob';
+                xhr.timeout = 15000;
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const size = xhr.response.size;
+                        if (size > 5000) { // Más de 5KB = canción real
+                            resolve({ exists: true, size: size, blob: xhr.response });
+                        } else {
+                            resolve({ exists: false, size: size, reason: 'archivo vacío' });
+                        }
+                    } else {
+                        resolve({ exists: false, size: 0, reason: `HTTP ${xhr.status}` });
+                    }
+                };
+                
+                xhr.onerror = () => resolve({ exists: false, reason: 'error de red' });
+                xhr.ontimeout = () => resolve({ exists: false, reason: 'timeout' });
+                xhr.onabort = () => resolve({ exists: false, reason: 'abortado' });
+                
+                xhr.send();
+            });
+        }
+
+        async function downloadBlob(id, blob, folder) {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            // Nombre con prefijo de carpeta para organización
+            link.download = `${folder.replace(/[^a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]/g, '_')}_${id}.ogg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }
+
+        async function startAction() {
             if (isRunning) return;
             
             const startId = parseInt(document.getElementById('startId').value) || 1;
             const endId = parseInt(document.getElementById('endId').value) || startId;
+            folderName = document.getElementById('folderName').value || 'Biblioteca de Tango';
             
             if (startId > endId) {
                 log('Error: El ID inicial debe ser menor o igual al final', 'error');
@@ -256,25 +405,46 @@
             document.getElementById('btnStart').disabled = true;
             document.getElementById('btnStop').disabled = false;
             
-            log(`Iniciando descarga de IDs ${startId} a ${endId}...`, 'info');
+            const isScanMode = currentMode === 'scan';
+            log(`${isScanMode ? '🔍 Escaneando' : '⬇ Descargando'} IDs ${startId} a ${endId}...`, 'info');
             
             const total = endId - startId + 1;
+            let currentRangeStart = null;
+            let currentRangeCount = 0;
             
             for (let id = startId; id <= endId && isRunning; id++) {
-                currentId = id;
                 updateProgress(id - startId + 1, total);
                 
                 try {
-                    // Intentar descargar directamente
-                    const success = await downloadSong(id);
+                    const result = await tryDownloadAndCheck(id);
                     
-                    if (success) {
+                    if (result.exists) {
                         foundSongs.push(id);
-                        downloadedCount++;
-                        log(`✓ ID ${id}: Descargando...`, 'success');
+                        
+                        // Manejar rangos en modo escaneo
+                        if (isScanMode) {
+                            if (currentRangeStart === null) {
+                                currentRangeStart = id;
+                            }
+                            currentRangeCount++;
+                            log(`🔍 ID ${id}: Encontrada (${(result.size/1024).toFixed(1)} KB)`, 'scan');
+                        } else {
+                            // Modo descarga
+                            await downloadBlob(id, result.blob, folderName);
+                            downloadedCount++;
+                            log(`✓ ID ${id}: Descargada (${(result.size/1024).toFixed(1)} KB) → "${folderName}_${id}.ogg"`, 'success');
+                        }
                     } else {
                         failedCount++;
-                        log(`✗ ID ${id}: No se pudo descargar`, 'error');
+                        
+                        // Si estábamos en un rango válido, cerrarlo
+                        if (isScanMode && currentRangeStart !== null) {
+                            addRange(currentRangeStart, id - 1, currentRangeCount);
+                            currentRangeStart = null;
+                            currentRangeCount = 0;
+                        }
+                        
+                        log(`✗ ID ${id}: ${result.reason}`, 'error');
                     }
                 } catch (e) {
                     failedCount++;
@@ -283,28 +453,39 @@
                 
                 updateStats();
                 
-                // Esperar 1 segundo entre descargas
+                // Pausa entre peticiones
                 if (isRunning && id < endId) {
-                    await new Promise(r => setTimeout(r, 1000));
+                    await new Promise(r => setTimeout(r, 800));
                 }
+            }
+            
+            // Cerrar rango pendiente al finalizar
+            if (isScanMode && currentRangeStart !== null) {
+                addRange(currentRangeStart, endId, currentRangeCount);
             }
             
             isRunning = false;
             document.getElementById('btnStart').disabled = false;
             document.getElementById('btnStop').disabled = true;
             
-            log(`¡Proceso completado! ${downloadedCount} descargadas, ${failedCount} fallidas.`, 'info');
+            if (isScanMode) {
+                log(`🔍 Escaneo completado! ${foundSongs.length} canciones encontradas en ${validRanges.length} rango(s).`, 'info');
+            } else {
+                log(`¡Descarga completada! ${downloadedCount} canciones descargadas, ${failedCount} fallidas.`, 'info');
+            }
         }
 
-        function stopDownload() {
+        function stopAction() {
             isRunning = false;
-            log('Descarga detenida por el usuario.', 'info');
+            log('Proceso detenido por el usuario.', 'info');
             document.getElementById('btnStart').disabled = false;
             document.getElementById('btnStop').disabled = true;
         }
 
         function clearLog() {
             document.getElementById('log').innerHTML = '';
+            validRanges = [];
+            document.getElementById('rangesFound').style.display = 'none';
         }
 
         function exportList() {
@@ -313,7 +494,7 @@
                 return;
             }
             
-            const content = foundSongs.map(id => `${BASE_URL}${id}.ogg`).join('\n');
+            const content = foundSongs.map(id => `${BASE_URL}${id}.ogg`).join('\\n');
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -325,10 +506,28 @@
             log(`Lista exportada: ${foundSongs.length} URLs`, 'success');
         }
 
-        // Cargar desde URL params
-        const params = new URLSearchParams(window.location.search);
-        if (params.has('start')) document.getElementById('startId').value = params.get('start');
-        if (params.has('end')) document.getElementById('endId').value = params.get('end');
+        function exportRanges() {
+            if (validRanges.length === 0) {
+                log('No hay rangos para exportar.', 'error');
+                return;
+            }
+            
+            const content = validRanges.map(r => `IDs ${r.start}-${r.end}: ${r.count} canciones`).join('\\n');
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'todotango_rangos.txt';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log(`Rangos exportados: ${validRanges.length}`, 'success');
+        }
     </script>
 </body>
 </html>
+
+
+
+print("Archivo guardado: /mnt/agents/output/index.html")
+print(f"Tamaño: {len(html_content)} caracteres")

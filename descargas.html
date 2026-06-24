@@ -704,7 +704,7 @@ async function startDownload() {
         const blob = await resp.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `${item.audioId} - ${(item.titulo||'tango').replace(/[<>:"/\\|?*]/g,'')}.ogg`;
+        a.download = buildFilename(item);
         document.body.appendChild(a); a.click();
         setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 3000);
         item.dlStatus = 'ok';
@@ -728,6 +728,46 @@ async function startDownload() {
   const err = dlQueue.filter(x=>x.dlStatus==='err').length;
   $('dlStatus').textContent = `✓ Listo: ${ok} descargados${err?', '+err+' errores':''}`;
   $('btnDownload').disabled=false; $('btnDlStop').style.display='none';
+
+  // Auto-exportar CSV resumen de lo descargado
+  if (ok > 0) exportDlCSV();
+}
+
+// Nombre del archivo: Titulo - Orquesta - Genero - Año.ogg
+// Máx 180 chars para compatibilidad con Windows/Mac
+function buildFilename(item) {
+  const clean = s => (s||'').replace(/[<>:"/\\|?*\n\r\t]/g, '').trim();
+  const parts = [
+    clean(item.titulo),
+    clean(item.musica),   // orquesta / músico
+    clean(item.genero),
+    item.anio || '',
+  ].filter(Boolean);
+  let name = parts.join(' - ');
+  if (name.length > 180) name = name.slice(0, 180);
+  return name + '.ogg';
+}
+
+function exportDlCSV() {
+  const ok = dlQueue.filter(x => x.dlStatus === 'ok');
+  if (!ok.length) return;
+  const rows = [['Archivo descargado','ID Audio','ID Tema','Título','Género','Año','Música/Orquesta','Letra','URL Audio']];
+  ok.forEach(x => {
+    const meta = allData.find(d => d.audioId === x.audioId) || x;
+    rows.push([
+      buildFilename(x),
+      x.audioId,
+      meta.id || '',
+      meta.titulo || x.titulo,
+      meta.genero || x.genero,
+      meta.anio   || x.anio,
+      meta.musica || x.musica || '',
+      meta.letra  || '',
+      `${CDN_OGG}${x.audioId}.ogg`
+    ]);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  dlFile('\uFEFF' + csv, `todotango_descargados_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
 }
 
 function stopDownload() { dlAbort=true; $('dlStatus').textContent='Deteniendo…'; $('btnDlStop').style.display='none'; }

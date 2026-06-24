@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <input type="file" id="file" accept="audio/*" multiple>
+  <div id="log"></div>
+  <script>
+    document.getElementById('file').addEventListener('change', async function() {
+      for (const file of this.files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', 'dra_bruzera_unsigned');
+        fd.append('resource_type', 'raw');  // ← clave para audio
+
+        const res  = await fetch('https://api.cloudinary.com/v1_1/dwgwbdtud/raw/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        document.getElementById('log').innerHTML +=
+          '<p><b>' + file.name + '</b><br>' +
+          'URL: ' + data.secure_url + '<br>' +
+          'Public ID: ' + data.public_id + '</p>';
+      }
+    });
+  </script>
+</body>
+</html>

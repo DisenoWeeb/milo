@@ -5,649 +5,696 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TodoTango Scraper</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --surface2: #1f1f1f;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.15);
-    --text: #f0ece4;
-    --text2: #888;
-    --text3: #555;
-    --accent: #c9a84c;
-    --accent2: #8b5e3c;
-    --red: #9b2335;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1f1f1f;
+  --surface3: #252525;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #ede9df;
+  --text2: #7a7570;
+  --text3: #484440;
+  --gold: #c9a84c;
+  --gold2: #a07830;
+  --red: #8b1a2a;
+  --red-text: #e07070;
+  --green: #2a6640;
+  --green-text: #7ec89a;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Georgia', serif;
-    min-height: 100vh;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 2rem 2rem 1.5rem;
-    display: flex;
-    align-items: flex-end;
-    gap: 1.5rem;
-  }
+/* ── Header ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
 
-  .logo-mark {
-    width: 48px;
-    height: 48px;
-    border: 1px solid var(--accent);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
+.logo {
+  width: 44px; height: 44px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--gold);
+  flex-shrink: 0;
+}
 
-  header h1 {
-    font-size: 26px;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    color: var(--text);
-    line-height: 1.2;
-  }
+header h1 { font-size: 22px; font-weight: 400; letter-spacing: .04em; }
+header p  { font-size: 11px; color: var(--text2); font-family: monospace; margin-top: 2px; }
 
-  header p {
-    font-size: 13px;
-    color: var(--text2);
-    font-family: 'Courier New', monospace;
-    margin-top: 4px;
-    letter-spacing: 0.02em;
-  }
+/* ── Layout ── */
+main { max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; }
 
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
 
-  .controls-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
+.tab {
+  padding: 8px 18px;
+  font-family: monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .15s; margin-bottom: -1px;
+}
 
-  .controls-card h2 {
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text3);
-    font-family: 'Courier New', monospace;
-    margin-bottom: 1rem;
-  }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--gold); border-color: var(--gold); }
 
-  .controls-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+.panel { display: none; }
+.panel.active { display: block; }
 
-  select, input[type="text"] {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 13px;
-    padding: 8px 12px;
-    height: 38px;
-    outline: none;
-    font-family: 'Courier New', monospace;
-  }
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
 
-  select:focus, input[type="text"]:focus {
-    border-color: var(--accent);
-  }
+.card-title {
+  font-family: monospace; font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 1rem;
+}
 
-  select#selLetra { width: 90px; }
-  select#selGenero { width: 180px; }
+/* ── Controls ── */
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-  button {
-    height: 38px;
-    padding: 0 18px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Courier New', monospace;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    transition: all 0.15s;
-  }
+select, input[type="text"], input[type="number"] {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px; font-family: monospace;
+  padding: 7px 10px; height: 34px; outline: none;
+  transition: border-color .15s;
+}
+select:focus, input:focus { border-color: var(--gold); }
 
-  button:hover { background: var(--surface2); border-color: var(--text3); }
-  button:disabled { opacity: 0.35; cursor: not-allowed; }
+#selLetra  { width: 80px; }
+#selGenero { width: 170px; }
 
-  button.primary {
-    background: var(--accent);
-    color: #0d0d0d;
-    border-color: var(--accent);
-    font-weight: 600;
-  }
+button {
+  height: 34px; padding: 0 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent; color: var(--text);
+  font-size: 12px; font-family: monospace;
+  cursor: pointer; letter-spacing: .04em;
+  transition: all .15s; white-space: nowrap;
+}
+button:hover { background: var(--surface2); }
+button:disabled { opacity: .3; cursor: not-allowed; }
 
-  button.primary:hover { opacity: 0.88; background: var(--accent); }
+.btn-primary { background: var(--gold); color: #0d0d0d; border-color: var(--gold); font-weight: 700; }
+.btn-primary:hover { opacity: .85; background: var(--gold); }
+.btn-danger  { border-color: var(--red); color: var(--red-text); }
+.btn-danger:hover  { background: rgba(139,26,42,.15); }
+.btn-success { border-color: var(--green); color: var(--green-text); }
+.btn-success:hover { background: rgba(42,102,64,.2); }
 
-  button.danger {
-    border-color: var(--red);
-    color: #f87171;
-  }
+/* ── Progress ── */
+.progress-wrap { margin-top: 1rem; }
+.progress-bar  { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; margin-bottom: 6px; }
+.progress-fill { height: 100%; background: var(--gold); transition: width .3s; }
+.status { font-family: monospace; font-size: 11px; color: var(--text2); min-height: 14px; }
 
-  button.danger:hover { background: rgba(155,35,53,0.15); }
+/* ── Log ── */
+.log {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 12px;
+  font-family: monospace; font-size: 11px; color: var(--text2);
+  max-height: 120px; overflow-y: auto;
+  margin-top: 10px; display: none;
+}
+.log-line { padding: 1px 0; }
+.log-ok   { color: var(--green-text); }
+.log-err  { color: var(--red-text); }
+.log-info { color: var(--gold); }
 
-  .progress-wrap {
-    margin-top: 1rem;
-    display: none;
-  }
+/* ── Stats ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px; margin-bottom: 1rem;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.stat .n { font-size: 26px; color: var(--gold); line-height: 1; margin-bottom: 2px; }
+.stat .l { font-family: monospace; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
 
-  .progress-bar {
-    height: 2px;
-    background: var(--border);
-    border-radius: 1px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
+/* ── Filter row ── */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: .75rem; }
+.filter-row input[type="text"] { flex: 1; min-width: 180px; }
 
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 1px;
-    transition: width 0.3s ease;
-  }
+/* ── Table ── */
+.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.table-wrap { overflow-x: auto; }
 
-  .status {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--text2);
-    min-height: 16px;
-  }
+table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 10px;
-    margin-bottom: 1.5rem;
-    display: none;
-  }
+thead th {
+  text-align: left; padding: 9px 12px;
+  font-family: monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text3); background: var(--surface2);
+  border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 400;
+}
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-  }
+tbody td {
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
-  .stat-card .num {
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--accent);
-    line-height: 1;
-    margin-bottom: 4px;
-    font-family: 'Georgia', serif;
-  }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
 
-  .stat-card .lbl {
-    font-size: 11px;
-    color: var(--text3);
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
+.col-sel    { width: 36px; }
+.col-titulo { width: 26%; }
+.col-genero { width: 11%; }
+.col-anio   { width: 7%; }
+.col-musica { width: 20%; }
+.col-letra  { width: 20%; }
+.col-id     { width: 7%; }
+.col-dl     { width: 5%; text-align: center; }
 
-  .filter-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: 1rem;
-    display: none;
-  }
+td a { color: var(--gold); text-decoration: none; }
+td a:hover { text-decoration: underline; }
 
-  .filter-row input { flex: 1; min-width: 200px; }
+.badge {
+  display: inline-block; font-size: 9px; padding: 2px 7px;
+  border-radius: 10px; font-family: monospace; letter-spacing: .04em;
+  text-transform: uppercase; font-weight: 700;
+}
+.b-tango   { background: rgba(201,168,76,.12); color: var(--gold);      border: 1px solid rgba(201,168,76,.25); }
+.b-vals    { background: rgba(94,160,150,.12); color: #5ea096;           border: 1px solid rgba(94,160,150,.25); }
+.b-milonga { background: rgba(160,120,60,.15); color: #c4895a;           border: 1px solid rgba(160,120,60,.25); }
+.b-poema   { background: rgba(130,90,180,.12); color: #b07fd6;           border: 1px solid rgba(130,90,180,.25); }
+.b-other   { background: var(--surface2); color: var(--text3);           border: 1px solid var(--border); }
 
-  .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
+.pagination {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  border-top: 1px solid var(--border); justify-content: center;
+  font-family: monospace; font-size: 11px; color: var(--text2);
+}
 
-  .table-wrap { overflow-x: auto; }
+.empty {
+  text-align: center; padding: 3rem 2rem;
+  color: var(--text3); font-family: monospace; font-size: 12px; line-height: 2;
+}
+.empty-icon { font-size: 36px; opacity: .25; margin-bottom: .5rem; }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    table-layout: fixed;
-  }
+/* ── Download panel ── */
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px; margin-top: 1rem;
+  max-height: 280px; overflow-y: auto;
+}
 
-  thead th {
-    text-align: left;
-    padding: 11px 14px;
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text3);
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    font-family: 'Courier New', monospace;
-    white-space: nowrap;
-  }
+.dl-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
 
-  tbody td {
-    padding: 9px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-  }
+.dl-item .dl-title { font-size: 12px; color: var(--text); font-weight: 600; }
+.dl-item .dl-meta  { font-family: monospace; font-size: 10px; color: var(--text2); }
 
-  tbody tr:last-child td { border-bottom: none; }
+.dl-progress-bar { height: 2px; background: var(--border); border-radius: 1px; margin-top: 4px; }
+.dl-progress-fill { height: 100%; border-radius: 1px; background: var(--gold); transition: width .3s; }
 
-  tbody tr:hover td { background: var(--surface2); }
+.dl-status-badge {
+  font-family: monospace; font-size: 9px; padding: 1px 6px;
+  border-radius: 4px; display: inline-block; text-transform: uppercase;
+}
+.ds-wait    { background: rgba(255,255,255,.05); color: var(--text3); }
+.ds-loading { background: rgba(201,168,76,.15); color: var(--gold); }
+.ds-ok      { background: rgba(42,102,64,.2);   color: var(--green-text); }
+.ds-err     { background: rgba(139,26,42,.2);   color: var(--red-text); }
 
-  td a {
-    color: var(--accent);
-    text-decoration: none;
-  }
+/* ── Export ── */
+.export-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 1rem; flex-wrap: wrap;
+}
+.export-row .info { font-family: monospace; font-size: 11px; color: var(--text3); margin-right: auto; }
 
-  td a:hover { text-decoration: underline; }
+/* ── Checkbox ── */
+input[type="checkbox"] { accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer; }
 
-  .col-titulo { width: 30%; }
-  .col-genero { width: 14%; }
-  .col-anio   { width: 8%; }
-  .col-musica { width: 24%; }
-  .col-letra  { width: 24%; }
+footer {
+  text-align: center; padding: 2rem;
+  font-size: 10px; color: var(--text3); font-family: monospace;
+  border-top: 1px solid var(--border); margin-top: 2rem; letter-spacing: .04em;
+}
 
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
-  .b-tango   { background: rgba(201,168,76,0.15); color: var(--accent); border: 1px solid rgba(201,168,76,0.3); }
-  .b-vals    { background: rgba(94,160,150,0.15); color: #5ea096; border: 1px solid rgba(94,160,150,0.3); }
-  .b-milonga { background: rgba(139,94,60,0.2); color: #c4895a; border: 1px solid rgba(139,94,60,0.3); }
-  .b-poema   { background: rgba(130,90,180,0.15); color: #b07fd6; border: 1px solid rgba(130,90,180,0.3); }
-  .b-other   { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
-
-  .pagination {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-top: 1px solid var(--border);
-    justify-content: center;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--text2);
-  }
-
-  .empty {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text3);
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 2;
-  }
-
-  .empty .big { font-size: 40px; margin-bottom: 0.5rem; opacity: 0.3; }
-
-  .export-row {
-    display: none;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    margin-top: 1rem;
-  }
-
-  .export-row .count {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--text3);
-    margin-right: auto;
-  }
-
-  footer {
-    text-align: center;
-    padding: 2rem;
-    font-size: 11px;
-    color: var(--text3);
-    font-family: 'Courier New', monospace;
-    border-top: 1px solid var(--border);
-    margin-top: 3rem;
-    letter-spacing: 0.04em;
-  }
-
-  @media (max-width: 600px) {
-    header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-    main { padding: 1rem; }
-    .col-musica, .col-letra { display: none; }
-    .col-titulo { width: 50%; }
-    .col-genero { width: 28%; }
-    .col-anio   { width: 22%; }
-  }
+@media (max-width: 640px) {
+  main { padding: 1rem; }
+  .col-musica, .col-letra, .col-id { display: none; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo-mark">♩</div>
+  <div class="logo">♩</div>
   <div>
     <h1>TodoTango Scraper</h1>
-    <p>Extractor del catálogo · todotango.com</p>
+    <p>Catálogo completo + descarga de audio · todotango.com</p>
   </div>
 </header>
 
 <main>
 
-  <!-- Controles -->
-  <div class="controls-card">
-    <h2>Configuración de extracción</h2>
-    <div class="controls-row">
-      <select id="selLetra">
-        <option value="a">A</option><option value="b">B</option><option value="c">C</option>
-        <option value="d">D</option><option value="e">E</option><option value="f">F</option>
-        <option value="g">G</option><option value="h">H</option><option value="i">I</option>
-        <option value="j">J</option><option value="k">K</option><option value="l">L</option>
-        <option value="m">M</option><option value="n">N</option><option value="o">O</option>
-        <option value="p">P</option><option value="q">Q</option><option value="r">R</option>
-        <option value="s">S</option><option value="t">T</option><option value="u">U</option>
-        <option value="v">V</option><option value="w">W</option><option value="y">Y</option>
-        <option value="z">Z</option>
-        <option value="ALL">Todas A–Z</option>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('scrape')">① Extracción</div>
+    <div class="tab" onclick="switchTab('download')" id="tabDl">② Descarga de audio</div>
+  </div>
+
+  <!-- ═══════════════ PANEL SCRAPE ═══════════════ -->
+  <div class="panel active" id="panelScrape">
+
+    <div class="card">
+      <div class="card-title">Configuración</div>
+      <div class="row">
+        <select id="selLetra">
+          <option value="a">A</option><option value="b">B</option><option value="c">C</option>
+          <option value="d">D</option><option value="e">E</option><option value="f">F</option>
+          <option value="g">G</option><option value="h">H</option><option value="i">I</option>
+          <option value="j">J</option><option value="k">K</option><option value="l">L</option>
+          <option value="m">M</option><option value="n">N</option><option value="o">O</option>
+          <option value="p">P</option><option value="q">Q</option><option value="r">R</option>
+          <option value="s">S</option><option value="t">T</option><option value="u">U</option>
+          <option value="v">V</option><option value="w">W</option><option value="y">Y</option>
+          <option value="z">Z</option>
+          <option value="ALL">Todas A–Z</option>
+        </select>
+
+        <select id="selGenero">
+          <option value="0">Todos los géneros</option>
+          <option value="7">Tango</option>
+          <option value="8">Vals</option>
+          <option value="4">Milonga</option>
+          <option value="6">Poema</option>
+          <option value="2">Folklore</option>
+          <option value="1">Canción</option>
+          <option value="5">Otros ritmos</option>
+          <option value="3">Foxtrot</option>
+        </select>
+
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:monospace;color:var(--text2);cursor:pointer;">
+          <input type="checkbox" id="chkEnrich" checked> Enriquecer detalles
+        </label>
+
+        <button class="btn-primary" id="btnScrape" onclick="startScrape()">▶ Extraer</button>
+        <button class="btn-danger"  id="btnStop"   onclick="stopScrape()" style="display:none">■ Detener</button>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap" style="display:none">
+        <div style="margin-top:10px">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+          <div class="status" id="statusMsg"></div>
+        </div>
+      </div>
+
+      <div class="log" id="debugLog"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow" style="display:none">
+      <div class="stat"><div class="n" id="sTot">0</div><div class="l">Total</div></div>
+      <div class="stat"><div class="n" id="sTan">0</div><div class="l">Tangos</div></div>
+      <div class="stat"><div class="n" id="sVal">0</div><div class="l">Vals</div></div>
+      <div class="stat"><div class="n" id="sMil">0</div><div class="l">Milongas</div></div>
+      <div class="stat"><div class="n" id="sPoe">0</div><div class="l">Poemas</div></div>
+      <div class="stat"><div class="n" id="sOtr">0</div><div class="l">Otros</div></div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-row" id="filterRow" style="display:none">
+      <input type="text" id="filterText" placeholder="Buscar título, músico, letrista…" oninput="renderTable()">
+      <select id="filterGenero" onchange="renderTable()">
+        <option value="">Todos los géneros</option>
+        <option value="tango">Tango</option>
+        <option value="vals">Vals</option>
+        <option value="milonga">Milonga</option>
+        <option value="poema">Poema</option>
+        <option value="canción">Canción</option>
+        <option value="folklore">Folklore</option>
+        <option value="foxtrot">Foxtrot</option>
       </select>
-
-      <select id="selGenero">
-        <option value="0">Todos los géneros</option>
-        <option value="7">Tango</option>
-        <option value="8">Vals</option>
-        <option value="4">Milonga</option>
-        <option value="6">Poema</option>
-        <option value="2">Folklore</option>
-        <option value="1">Canción</option>
-        <option value="5">Otros ritmos</option>
-        <option value="3">Foxtrot</option>
+      <select id="sortBy" onchange="renderTable()">
+        <option value="titulo">Título A–Z</option>
+        <option value="anio">Año</option>
+        <option value="genero">Género</option>
+        <option value="id">ID</option>
       </select>
-
-      <button class="primary" id="btnScrape" onclick="startScrape()">▶ Extraer</button>
-      <button class="danger" id="btnStop" onclick="stopScrape()" style="display:none">■ Detener</button>
+      <button onclick="selectAll(true)"  style="font-size:11px">☑ Sel. todo</button>
+      <button onclick="selectAll(false)" style="font-size:11px">☐ Deselec.</button>
     </div>
 
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      <div class="status" id="status"></div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card"><div class="num" id="sTot">0</div><div class="lbl">Total</div></div>
-    <div class="stat-card"><div class="num" id="sTan">0</div><div class="lbl">Tangos</div></div>
-    <div class="stat-card"><div class="num" id="sVal">0</div><div class="lbl">Vals</div></div>
-    <div class="stat-card"><div class="num" id="sMil">0</div><div class="lbl">Milongas</div></div>
-    <div class="stat-card"><div class="num" id="sOtr">0</div><div class="lbl">Otros</div></div>
-  </div>
-
-  <!-- Filtros -->
-  <div class="filter-row" id="filterRow">
-    <input type="text" id="filterText" placeholder="Buscar título, músico o letrista..." oninput="renderTable()">
-    <select id="filterGenero" onchange="renderTable()">
-      <option value="">Todos los géneros</option>
-      <option value="tango">Tango</option>
-      <option value="vals">Vals</option>
-      <option value="milonga">Milonga</option>
-      <option value="poema">Poema</option>
-      <option value="canción">Canción</option>
-      <option value="folklore">Folklore</option>
-      <option value="foxtrot">Foxtrot</option>
-    </select>
-    <select id="sortBy" onchange="renderTable()">
-      <option value="titulo">Título A–Z</option>
-      <option value="anio">Año</option>
-      <option value="genero">Género</option>
-    </select>
-  </div>
-
-  <!-- Tabla -->
-  <div class="table-card" id="tableCard">
-    <div class="empty" id="emptyMsg">
-      <div class="big">♬</div>
-      Seleccioná una letra y hacé clic en <strong>Extraer</strong>
-    </div>
-    <div class="table-wrap" id="tableWrap" style="display:none">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-titulo">Título</th>
-            <th class="col-genero">Género</th>
-            <th class="col-anio">Año</th>
-            <th class="col-musica">Música</th>
-            <th class="col-letra">Letra</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="pagination" id="pagination" style="display:none">
-        <button onclick="changePage(-1)">← Anterior</button>
-        <span id="pageInfo"></span>
-        <button onclick="changePage(1)">Siguiente →</button>
+    <!-- Tabla -->
+    <div class="table-card" id="tableCard">
+      <div class="empty" id="emptyMsg">
+        <div class="empty-icon">♬</div>
+        Seleccioná una letra y hacé clic en <strong>Extraer</strong>
+      </div>
+      <div id="tableWrap" style="display:none">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-sel"><input type="checkbox" id="chkAll" onchange="toggleAll(this.checked)"></th>
+                <th class="col-titulo">Título</th>
+                <th class="col-genero">Género</th>
+                <th class="col-anio">Año</th>
+                <th class="col-musica">Música</th>
+                <th class="col-letra">Letra</th>
+                <th class="col-id">ID</th>
+                <th class="col-dl">OGG</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination" style="display:none">
+          <button onclick="changePage(-1)">← Ant.</button>
+          <span id="pageInfo"></span>
+          <button onclick="changePage(1)">Sig. →</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Exportar -->
-  <div class="export-row" id="exportRow">
-    <span class="count" id="exportCount"></span>
-    <button onclick="exportCSV()">↓ CSV (Excel)</button>
-    <button onclick="exportJSON()">↓ JSON</button>
-  </div>
+    <!-- Export -->
+    <div class="export-row" id="exportRow" style="display:none">
+      <span class="info" id="exportInfo"></span>
+      <button onclick="exportCSV()">↓ CSV</button>
+      <button onclick="exportJSON()">↓ JSON</button>
+      <button class="btn-success" onclick="sendToDownload()">→ Descargar audio seleccionados</button>
+    </div>
+
+  </div><!-- /panelScrape -->
+
+  <!-- ═══════════════ PANEL DOWNLOAD ═══════════════ -->
+  <div class="panel" id="panelDownload">
+
+    <div class="card">
+      <div class="card-title">Descarga masiva de OGG</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:1rem;">
+        Los archivos están en <code style="color:var(--gold)">https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/{ID}.ogg</code>.
+        Seleccioná temas en la pestaña Extracción y mandálos acá, o ingresá IDs manualmente.
+      </p>
+
+      <div class="row" style="margin-bottom:10px">
+        <input type="text" id="manualIds" placeholder="IDs separados por coma: 2030, 2031, 2032…" style="flex:1;min-width:200px">
+        <input type="number" id="concurrency" value="3" min="1" max="8" style="width:60px" title="Descargas simultáneas">
+        <button class="btn-primary" id="btnDownload" onclick="startDownload()">▶ Descargar</button>
+        <button class="btn-danger" id="btnDlStop" onclick="stopDownload()" style="display:none">■ Detener</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="dlProgressFill" style="width:0%"></div></div>
+        <div class="status" id="dlStatus"></div>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="card" id="dlQueueCard" style="display:none">
+      <div class="card-title">Cola de descarga · <span id="dlQueueInfo"></span></div>
+      <div class="dl-grid" id="dlGrid"></div>
+    </div>
+
+  </div><!-- /panelDownload -->
 
 </main>
 
-<footer>
-  scraper no oficial · datos © todotango.com · uso personal
-</footer>
+<footer>scraper no oficial · datos © todotango.com · uso personal</footer>
 
 <script>
-let allData = [];
-let currentPage = 1;
-const PAGE_SIZE = 50;
-let running = false;
-let abortFlag = false;
-
-// Proxy propio en Google Apps Script (reemplaza al CORS proxy público)
+// ════════════════════════════════════
+//   CONSTANTES
+// ════════════════════════════════════
 const PROXY = 'https://script.google.com/macros/s/AKfycbxIsEvw08ZJK92yiBZhOf0U4MlwdbH7ujlzl73fSnrRuCDeUFbDFvUbhCmAVZ-kmte5/exec?url=';
-const GENRE_MAP = { '0':'todos','1':'Canci%c3%b3n','2':'Folklore','3':'Foxtrot','4':'Milonga','5':'Otros%20ritmos','6':'Poema','7':'Tango','8':'Vals' };
+const CDN   = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
 
-function badgeClass(g) {
-  if (!g) return 'b-other';
-  const l = g.toLowerCase();
-  if (l.includes('tango'))   return 'b-tango';
-  if (l.includes('vals'))    return 'b-vals';
-  if (l.includes('milonga')) return 'b-milonga';
-  if (l.includes('poema'))   return 'b-poema';
-  return 'b-other';
+const GENRE_SLUG = {
+  '0': 'todos', '1': 'Canci%c3%b3n', '2': 'Folklore',
+  '3': 'Foxtrot', '4': 'Milonga', '5': 'Otros%20ritmos',
+  '6': 'Poema', '7': 'Tango', '8': 'Vals'
+};
+
+const ALPHABET = ['a','b','c','d','e','f','g','h','i','j','k','l','m',
+                  'n','o','p','q','r','s','t','u','v','w','y','z'];
+
+// ════════════════════════════════════
+//   ESTADO
+// ════════════════════════════════════
+let allData      = [];
+let selected     = new Set();   // IDs seleccionados
+let currentPage  = 1;
+const PAGE_SIZE  = 50;
+let running      = false;
+let abortFlag    = false;
+let dlAbort      = false;
+let dlQueue      = [];
+
+// ════════════════════════════════════
+//   TABS
+// ════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${name}"]`).classList.add('active');
+  document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
 }
 
-function setStatus(msg)  { document.getElementById('status').textContent = msg; }
-function setProgress(p)  { document.getElementById('progressFill').style.width = p + '%'; }
+// ════════════════════════════════════
+//   PROXY FETCH
+// ════════════════════════════════════
+async function proxyFetch(url) {
+  const r = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d.contents || '';
+}
 
+// ════════════════════════════════════
+//   EXTRACCIÓN DE LISTA
+// ════════════════════════════════════
 async function fetchLetter(letter, generoId) {
-  const genStr = GENRE_MAP[generoId] || 'todos';
-  const targetUrl = `https://www.todotango.com/musica/obras/letras/${letter}/0/${genStr}/`;
-  let html = '';
-  try {
-    const r  = await fetch(PROXY + encodeURIComponent(targetUrl));
-    const d  = await r.json();
-    html = d.contents || '';
-  } catch(e) { return []; }
+  const genre = GENRE_SLUG[generoId] || 'todos';
+  // URL real de todotango para listado de letras
+  const url = `https://www.todotango.com/musica/obras/letras/${letter}/0/${genre}`;
+  addLog('info', `GET ${url}`);
+
+  let html;
+  try { html = await proxyFetch(url); }
+  catch(e) { addLog('err', `Error: ${e.message}`); return []; }
+
+  if (!html) { addLog('err', 'HTML vacío'); return []; }
+  addLog('ok', `HTML recibido: ${html.length} chars`);
 
   const items = [];
+  const seen  = new Set();
 
-  // Patrón principal: title="Nombre (Género)"
-  const re1 = /href="(https:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]+\/)"[^>]*title="([^"]+)\(([^)]+)\)"/g;
+  // ── Patrón 1: href con title="Titulo (Género)" ──
+  // Ej: href="https://www.todotango.com/musica/tema/1234/Mi-Tango/" ... title="Mi Tango (Tango)"
+  const re1 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]*?)"[^>]*title="([^"(]+)\(([^)]+)\)"/g;
   let m;
   while ((m = re1.exec(html)) !== null) {
     const id = parseInt(m[2]);
-    if (!items.find(x => x.id === id))
+    if (!seen.has(id)) {
+      seen.add(id);
       items.push({ id, titulo: m[3].trim(), genero: m[4].trim(), url: m[1], musica:'', letra:'', anio:'' });
+    }
   }
 
-  // Fallback
+  // ── Patrón 2: <a href="...tema/ID/slug/">Título</a> (Género) ──
   if (items.length === 0) {
-    const re2 = /href="(https:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/([^"]+)\/)"[^>]*>([^<]+)<\/a>\s*\(([^)]+)\)/g;
+    const re2 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]*?)"[^>]*>([^<]+)<\/a>\s*[\(\[]\s*([^\)\]]+)\s*[\)\]]/g;
     while ((m = re2.exec(html)) !== null) {
       const id = parseInt(m[2]);
-      if (!items.find(x => x.id === id))
-        items.push({ id, titulo: m[4].trim(), genero: m[5].trim(), url: m[1], musica:'', letra:'', anio:'' });
+      if (!seen.has(id)) {
+        seen.add(id);
+        items.push({ id, titulo: m[3].trim(), genero: m[4].trim(), url: m[1], musica:'', letra:'', anio:'' });
+      }
     }
+  }
+
+  // ── Patrón 3: solo href (sin género en el link, lo tomamos de contexto) ──
+  if (items.length === 0) {
+    const re3 = /href="(https?:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/([^"\/]+)\/)"/g;
+    while ((m = re3.exec(html)) !== null) {
+      const id = parseInt(m[2]);
+      if (!seen.has(id)) {
+        seen.add(id);
+        const titulo = decodeURIComponent(m[3].replace(/-/g,' ')).replace(/\b\w/g,c=>c.toUpperCase());
+        items.push({ id, titulo, genero:'', url: m[1], musica:'', letra:'', anio:'' });
+      }
+    }
+  }
+
+  addLog(items.length ? 'ok' : 'err', `Encontrados: ${items.length} temas`);
+
+  // Si aún 0, volcamos un fragmento del HTML para diagnosticar
+  if (items.length === 0) {
+    const snippet = html.slice(0, 2000).replace(/\s+/g,' ');
+    addLog('info', 'HTML snippet: ' + snippet.slice(0,400));
   }
 
   return items;
 }
 
+// ════════════════════════════════════
+//   ENRIQUECIMIENTO
+// ════════════════════════════════════
 async function enrichItem(item) {
-  try {
-    const r   = await fetch(PROXY + encodeURIComponent(item.url));
-    const d   = await r.json();
-    const html = d.contents || '';
+  let html;
+  try { html = await proxyFetch(item.url); }
+  catch(e) { return; }
+  if (!html) return;
 
-    const ym = html.match(/(?:Tango|Vals|Milonga|Canción|Foxtrot|Poema|Folklore)[^<]*(\d{4})/)
-            || html.match(/<h4[^>]*>[^<]*(\d{4})[^<]*<\/h4>/);
-    if (ym) item.anio = ym[1];
+  // Año — busca 4 dígitos cerca de palabras clave de género
+  const ym = html.match(/(?:Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)[^<]{0,40}?(\b1[89]\d{2}\b|\b20[012]\d\b)/i)
+          || html.match(/(\b1[89]\d{2}\b|\b20[012]\d\b)/);
+  if (ym) item.anio = ym[1];
 
-    const mm = html.match(/Música:[^<]*<a[^>]+>([^<]+)<\/a>/);
-    if (mm) item.musica = mm[1].trim();
+  // Música — varias formas que usa el sitio
+  const mmPatterns = [
+    /Música[^<]*<a[^>]+>([^<]+)<\/a>/i,
+    /M[uú]sica[^:]*:\s*([^<\n]+?)(?:<|$)/i,
+    /class="[^"]*musica[^"]*"[^>]*>([^<]+)/i,
+  ];
+  for (const p of mmPatterns) {
+    const mm = html.match(p);
+    if (mm && mm[1].trim().length > 1) { item.musica = mm[1].trim(); break; }
+  }
 
-    const lm = html.match(/Letra:[^<]*<a[^>]+>([^<]+)<\/a>/);
-    if (lm) item.letra = lm[1].trim();
-  } catch(e) {}
+  // Letra — varias formas
+  const lmPatterns = [
+    /Letra[^<]*<a[^>]+>([^<]+)<\/a>/i,
+    /Letra[^:]*:\s*([^<\n]+?)(?:<|$)/i,
+    /class="[^"]*letra[^"]*"[^>]*>([^<]+)/i,
+  ];
+  for (const p of lmPatterns) {
+    const lm = html.match(p);
+    if (lm && lm[1].trim().length > 1) { item.letra = lm[1].trim(); break; }
+  }
+
+  // Género — si venía vacío, intentamos sacarlo
+  if (!item.genero) {
+    const gm = html.match(/<h[1-4][^>]*>\s*(Tango|Vals|Milonga|Canci[oó]n|Foxtrot|Poema|Folklore)\s*</i);
+    if (gm) item.genero = gm[1];
+  }
 }
 
+// ════════════════════════════════════
+//   ORCHESTRATION
+// ════════════════════════════════════
 async function startScrape() {
   if (running) return;
   running = true; abortFlag = false;
-  allData = []; currentPage = 1;
+  allData = []; selected.clear(); currentPage = 1;
 
-  document.getElementById('btnScrape').disabled = true;
-  document.getElementById('btnStop').style.display = '';
-  document.getElementById('progressWrap').style.display = 'block';
-  document.getElementById('statsGrid').style.display = 'none';
-  document.getElementById('filterRow').style.display = 'none';
-  document.getElementById('exportRow').style.display = 'none';
-  document.getElementById('tableWrap').style.display = 'none';
-  document.getElementById('emptyMsg').style.display = '';
-  document.getElementById('emptyMsg').innerHTML = '<div class="big">♩</div>Extrayendo...';
-
-  const letraVal  = document.getElementById('selLetra').value;
-  const generoId  = document.getElementById('selGenero').value;
-  const ALPHABET  = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','y','z'];
-  const letters   = letraVal === 'ALL' ? ALPHABET : [letraVal];
-
+  setUI(true);
+  showEl('progressWrap');
+  showEl('debugLog');
+  hideEl('statsRow'); hideEl('filterRow'); hideEl('exportRow');
+  hideEl('tableWrap');
+  showEl('emptyMsg');
+  setEmptyMsg('♩', 'Extrayendo…');
   setProgress(0);
+
+  const letraVal = $('selLetra').value;
+  const generoId = $('selGenero').value;
+  const letters  = letraVal === 'ALL' ? ALPHABET : [letraVal];
 
   for (let li = 0; li < letters.length; li++) {
     if (abortFlag) break;
     const l = letters[li];
-    setStatus(`Leyendo letra "${l.toUpperCase()}"… (${li + 1}/${letters.length})`);
+    setStatus(`Letra "${l.toUpperCase()}" (${li+1}/${letters.length})`);
     const items = await fetchLetter(l, generoId);
     allData.push(...items);
     updateStats();
-    setProgress(Math.round((li + 1) / letters.length * 70));
+    setProgress(Math.round((li+1) / letters.length * 65));
+    if (allData.length > 0) showResults();
     renderTable();
-    if (letters.length > 1) await sleep(600);
+    if (letters.length > 1) await sleep(700);
   }
 
-  document.getElementById('statsGrid').style.display = 'grid';
-  document.getElementById('filterRow').style.display = 'flex';
-  document.getElementById('exportRow').style.display = 'flex';
-  document.getElementById('tableWrap').style.display = '';
-  document.getElementById('emptyMsg').style.display = 'none';
-
-  setStatus(`${allData.length} temas encontrados. Enriqueciendo con detalles…`);
-  setProgress(70);
-
-  // Enriquecer primeros 30 con año/músico/letrista
-  const toEnrich = allData.filter(x => !x.anio).slice(0, 30);
-  for (let i = 0; i < toEnrich.length; i++) {
-    if (abortFlag) break;
-    await enrichItem(toEnrich[i]);
-    setProgress(70 + Math.round((i + 1) / toEnrich.length * 28));
-    if (i % 5 === 0) renderTable();
-    await sleep(250);
-  }
-
+  if (allData.length > 0) showResults();
   renderTable();
-  updateStats();
-  setProgress(100);
-  setStatus(`✓ Listo: ${allData.length} temas. Podés filtrar y exportar.`);
 
-  document.getElementById('btnScrape').disabled = false;
-  document.getElementById('btnStop').style.display = 'none';
+  // Enriquecimiento opcional
+  if ($('chkEnrich').checked && allData.length > 0) {
+    setStatus(`${allData.length} temas. Enriqueciendo detalles…`);
+    const toEnrich = allData.slice(0, 60);
+    for (let i = 0; i < toEnrich.length; i++) {
+      if (abortFlag) break;
+      await enrichItem(toEnrich[i]);
+      setProgress(65 + Math.round((i+1) / toEnrich.length * 33));
+      if (i % 5 === 0) renderTable();
+      await sleep(300);
+    }
+    renderTable();
+    updateStats();
+  }
+
+  setProgress(100);
+  setStatus(`✓ ${allData.length} temas. Podés filtrar y exportar.`);
+  setUI(false);
   running = false;
 }
 
 function stopScrape() {
   abortFlag = true;
   setStatus('Deteniendo…');
-  document.getElementById('btnStop').style.display = 'none';
+  hideEl('btnStop');
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function updateStats() {
-  const t = allData.length;
-  const tang = allData.filter(x => x.genero && x.genero.toLowerCase().includes('tango')).length;
-  const vals = allData.filter(x => x.genero && x.genero.toLowerCase().includes('vals')).length;
-  const mil  = allData.filter(x => x.genero && x.genero.toLowerCase().includes('milonga')).length;
-  const otros = t - tang - vals - mil;
-  document.getElementById('sTot').textContent = t;
-  document.getElementById('sTan').textContent = tang;
-  document.getElementById('sVal').textContent = vals;
-  document.getElementById('sMil').textContent = mil;
-  document.getElementById('sOtr').textContent = Math.max(0, otros);
-}
-
+// ════════════════════════════════════
+//   TABLA
+// ════════════════════════════════════
 function getFiltered() {
-  const txt  = (document.getElementById('filterText').value || '').toLowerCase();
-  const gen  = (document.getElementById('filterGenero').value || '').toLowerCase();
-  const sort = document.getElementById('sortBy').value;
+  const txt  = ($('filterText').value || '').toLowerCase();
+  const gen  = ($('filterGenero').value || '').toLowerCase();
+  const sort = $('sortBy').value;
 
   let data = allData.filter(x => {
-    const mt = !txt || x.titulo.toLowerCase().includes(txt) || (x.musica||'').toLowerCase().includes(txt) || (x.letra||'').toLowerCase().includes(txt);
+    const mt = !txt || x.titulo.toLowerCase().includes(txt)
+            || (x.musica||'').toLowerCase().includes(txt)
+            || (x.letra||'').toLowerCase().includes(txt);
     const mg = !gen || (x.genero||'').toLowerCase().includes(gen);
     return mt && mg;
   });
 
-  data.sort((a, b) => {
+  data.sort((a,b) => {
     if (sort === 'titulo') return a.titulo.localeCompare(b.titulo, 'es');
     if (sort === 'anio')   return (parseInt(a.anio)||9999) - (parseInt(b.anio)||9999);
     if (sort === 'genero') return (a.genero||'').localeCompare(b.genero||'', 'es');
+    if (sort === 'id')     return a.id - b.id;
     return 0;
   });
   return data;
@@ -659,21 +706,45 @@ function renderTable() {
   const pages    = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (currentPage > pages) currentPage = 1;
 
-  const slice = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const slice = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
 
-  document.getElementById('tbody').innerHTML = slice.map(x => `
+  $('tbody').innerHTML = slice.map(x => `
     <tr>
-      <td title="${esc(x.titulo)}"><a href="${x.url}" target="_blank">${esc(x.titulo)}</a></td>
-      <td><span class="badge ${badgeClass(x.genero)}">${esc(x.genero||'—')}</span></td>
-      <td>${x.anio || '—'}</td>
-      <td title="${esc(x.musica)}">${esc(x.musica||'—')}</td>
-      <td title="${esc(x.letra)}">${esc(x.letra||'—')}</td>
-    </tr>
-  `).join('');
+      <td class="col-sel"><input type="checkbox" data-id="${x.id}"
+          ${selected.has(x.id)?'checked':''} onchange="toggleSel(${x.id}, this.checked)"></td>
+      <td class="col-titulo" title="${esc(x.titulo)}">
+        <a href="${x.url}" target="_blank">${esc(x.titulo)}</a></td>
+      <td class="col-genero"><span class="badge ${bc(x.genero)}">${esc(x.genero||'—')}</span></td>
+      <td class="col-anio">${x.anio||'—'}</td>
+      <td class="col-musica" title="${esc(x.musica)}">${esc(x.musica||'—')}</td>
+      <td class="col-letra"  title="${esc(x.letra)}">${esc(x.letra||'—')}</td>
+      <td class="col-id" style="color:var(--text3)">${x.id}</td>
+      <td class="col-dl" style="text-align:center">
+        <a href="${CDN}${x.id}.ogg" download="${esc(x.titulo)}.ogg"
+           title="Descargar OGG" style="font-size:16px;text-decoration:none">↓</a>
+      </td>
+    </tr>`).join('');
 
-  document.getElementById('pageInfo').textContent = `Pág. ${currentPage} / ${pages}  (${total} resultados)`;
-  document.getElementById('pagination').style.display = total > PAGE_SIZE ? 'flex' : 'none';
-  document.getElementById('exportCount').textContent = `${total} temas listos para exportar`;
+  $('pageInfo').textContent = `Pág ${currentPage}/${pages} · ${total} resultados`;
+  $('pagination').style.display = total > PAGE_SIZE ? 'flex' : 'none';
+  $('exportInfo').textContent = `${selected.size} seleccionados · ${total} filtrados · ${allData.length} total`;
+  $('chkAll').indeterminate = selected.size > 0 && selected.size < allData.length;
+  $('chkAll').checked = selected.size === allData.length && allData.length > 0;
+}
+
+function toggleSel(id, on) {
+  on ? selected.add(id) : selected.delete(id);
+  renderTable();
+}
+
+function toggleAll(on) {
+  getFiltered().forEach(x => on ? selected.add(x.id) : selected.delete(x.id));
+  renderTable();
+}
+
+function selectAll(on) {
+  allData.forEach(x => on ? selected.add(x.id) : selected.delete(x.id));
+  renderTable();
 }
 
 function changePage(dir) {
@@ -682,28 +753,227 @@ function changePage(dir) {
   renderTable();
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ════════════════════════════════════
+//   DOWNLOAD PANEL
+// ════════════════════════════════════
+function sendToDownload() {
+  const ids = [...selected];
+  if (ids.length === 0) { alert('Seleccioná al menos un tema.'); return; }
+  $('manualIds').value = ids.join(', ');
+  switchTab('download');
 }
 
+async function startDownload() {
+  if (running) return;
+  dlAbort = false;
+  $('btnDownload').disabled = true;
+  showEl('btnDlStop');
+
+  // Construir cola
+  let ids = [];
+  const manual = $('manualIds').value.trim();
+  if (manual) {
+    ids = manual.split(/[,\s]+/).map(s => parseInt(s)).filter(n => !isNaN(n));
+  } else {
+    ids = allData.map(x => x.id);
+  }
+
+  if (ids.length === 0) {
+    alert('No hay IDs. Extraé datos primero o ingresá IDs manualmente.');
+    $('btnDownload').disabled = false;
+    hideEl('btnDlStop');
+    return;
+  }
+
+  // Armar queue
+  dlQueue = ids.map(id => {
+    const item = allData.find(x => x.id === id) || { id, titulo: `Tema ${id}`, genero:'', anio:'' };
+    return { ...item, dlStatus: 'wait' };
+  });
+
+  renderDlGrid();
+  showEl('dlQueueCard');
+
+  const concurrency = parseInt($('concurrency').value) || 3;
+  let done = 0;
+  const total = dlQueue.length;
+
+  $('dlStatus').textContent = `Descargando ${total} archivos (${concurrency} simultáneos)…`;
+
+  // Pool de concurrencia
+  const pool = [];
+  let qIdx = 0;
+
+  async function worker() {
+    while (qIdx < dlQueue.length && !dlAbort) {
+      const idx = qIdx++;
+      const item = dlQueue[idx];
+      item.dlStatus = 'loading';
+      updateDlItem(idx);
+
+      try {
+        const url  = `${CDN}${item.id}.ogg`;
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const blob = await resp.blob();
+        const a    = document.createElement('a');
+        a.href     = URL.createObjectURL(blob);
+        a.download = `${item.id} - ${item.titulo || 'tango'}.ogg`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        item.dlStatus = 'ok';
+      } catch(e) {
+        item.dlStatus = 'err';
+        item.dlError  = e.message;
+      }
+
+      done++;
+      updateDlItem(idx);
+      const pct = Math.round(done / total * 100);
+      $('dlProgressFill').style.width = pct + '%';
+      $('dlQueueInfo').textContent = `${done}/${total} · ${dlQueue.filter(x=>x.dlStatus==='ok').length} OK`;
+      $('dlStatus').textContent = `${done}/${total} descargados`;
+
+      // Pequeña pausa para no saturar
+      await sleep(200);
+    }
+  }
+
+  for (let i = 0; i < concurrency; i++) pool.push(worker());
+  await Promise.all(pool);
+
+  const ok  = dlQueue.filter(x => x.dlStatus === 'ok').length;
+  const err = dlQueue.filter(x => x.dlStatus === 'err').length;
+  $('dlStatus').textContent = `✓ Listo: ${ok} descargados, ${err} errores.`;
+  $('btnDownload').disabled = false;
+  hideEl('btnDlStop');
+}
+
+function stopDownload() {
+  dlAbort = true;
+  $('dlStatus').textContent = 'Deteniendo…';
+  hideEl('btnDlStop');
+}
+
+function renderDlGrid() {
+  $('dlGrid').innerHTML = dlQueue.map((item, i) => `
+    <div class="dl-item" id="dlitem-${i}">
+      <div class="dl-title">${esc(item.titulo)}</div>
+      <div class="dl-meta">ID: ${item.id} · ${esc(item.genero||'—')} ${item.anio?'· '+item.anio:''}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+        <span class="dl-status-badge ds-wait" id="dsbadge-${i}">En cola</span>
+        <div class="dl-progress-bar" style="flex:1"><div class="dl-progress-fill" id="dpbar-${i}" style="width:0%"></div></div>
+      </div>
+    </div>`).join('');
+}
+
+function updateDlItem(i) {
+  const item   = dlQueue[i];
+  const badge  = document.getElementById(`dsbadge-${i}`);
+  const bar    = document.getElementById(`dpbar-${i}`);
+  if (!badge) return;
+  const map = { wait:'ds-wait', loading:'ds-loading', ok:'ds-ok', err:'ds-err' };
+  const lbl = { wait:'En cola', loading:'Descargando…', ok:'✓ OK', err:'✗ Error' };
+  badge.className = `dl-status-badge ${map[item.dlStatus]}`;
+  badge.textContent = lbl[item.dlStatus];
+  if (item.dlStatus === 'ok')      bar.style.width = '100%';
+  else if (item.dlStatus === 'err') { bar.style.background = 'var(--red-text)'; bar.style.width = '100%'; }
+}
+
+// ════════════════════════════════════
+//   EXPORT
+// ════════════════════════════════════
 function exportCSV() {
   const data = getFiltered();
-  const rows = [['ID','Título','Género','Año','Música','Letra','URL']];
-  data.forEach(x => rows.push([x.id, x.titulo, x.genero, x.anio, x.musica, x.letra, x.url]));
-  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  download(csv, 'todotango.csv', 'text/csv;charset=utf-8;');
+  const rows = [['ID','Título','Género','Año','Música','Letra','URL OGG','URL Página']];
+  data.forEach(x => rows.push([
+    x.id, x.titulo, x.genero, x.anio, x.musica, x.letra,
+    `${CDN}${x.id}.ogg`, x.url
+  ]));
+  download(rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n'),
+    'todotango.csv', 'text/csv;charset=utf-8;');
 }
 
 function exportJSON() {
-  download(JSON.stringify(getFiltered(), null, 2), 'todotango.json', 'application/json');
+  const data = getFiltered().map(x => ({ ...x, ogg: `${CDN}${x.id}.ogg` }));
+  download(JSON.stringify(data, null, 2), 'todotango.json', 'application/json');
 }
 
 function download(content, filename, mime) {
-  const a   = document.createElement('a');
-  a.href    = URL.createObjectURL(new Blob([content], { type: mime }));
-  a.download = filename;
-  a.click();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+content], { type: mime }));
+  a.download = filename; a.click();
 }
+
+// ════════════════════════════════════
+//   HELPERS UI
+// ════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+function showEl(id) { $(id).style.display=''; }
+function hideEl(id) { $(id).style.display='none'; }
+
+function setUI(on) {
+  $('btnScrape').disabled = on;
+  $('btnStop').style.display = on ? '' : 'none';
+}
+
+function setProgress(p) { $('progressFill').style.width = p + '%'; }
+function setStatus(msg)  { $('statusMsg').textContent = msg; }
+
+function setEmptyMsg(icon, msg) {
+  $('emptyMsg').innerHTML = `<div class="empty-icon">${icon}</div>${msg}`;
+}
+
+function showResults() {
+  hideEl('emptyMsg');
+  showEl('tableWrap');
+  $('statsRow').style.display = 'grid';
+  $('filterRow').style.display = 'flex';
+  $('exportRow').style.display = 'flex';
+}
+
+function updateStats() {
+  const t    = allData.length;
+  const tang = allData.filter(x => /tango/i.test(x.genero)).length;
+  const vals = allData.filter(x => /vals/i.test(x.genero)).length;
+  const mil  = allData.filter(x => /milonga/i.test(x.genero)).length;
+  const poe  = allData.filter(x => /poema/i.test(x.genero)).length;
+  const otr  = t - tang - vals - mil - poe;
+  $('sTot').textContent = t;
+  $('sTan').textContent = tang;
+  $('sVal').textContent = vals;
+  $('sMil').textContent = mil;
+  $('sPoe').textContent = poe;
+  $('sOtr').textContent = Math.max(0, otr);
+}
+
+function addLog(type, msg) {
+  const log = $('debugLog');
+  const el  = document.createElement('div');
+  el.className = `log-line log-${type}`;
+  el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+function bc(g) {
+  if (!g) return 'b-other';
+  const l = g.toLowerCase();
+  if (l.includes('tango'))   return 'b-tango';
+  if (l.includes('vals'))    return 'b-vals';
+  if (l.includes('milonga')) return 'b-milonga';
+  if (l.includes('poema'))   return 'b-poema';
+  return 'b-other';
+}
+
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
 </body>
 </html>

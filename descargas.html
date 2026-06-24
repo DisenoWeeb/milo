@@ -1,533 +1,708 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TodoTango Downloader</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: #e94560;
-        }
-        .subtitle {
-            text-align: center;
-            color: #aaa;
-            margin-bottom: 30px;
-        }
-        .panel {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        input[type="number"] {
-            flex: 1;
-            min-width: 100px;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 16px;
-        }
-        input[type="text"] {
-            flex: 2;
-            min-width: 200px;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 16px;
-        }
-        input::placeholder { color: #888; }
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            background: #e94560;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover { background: #ff6b6b; transform: translateY(-2px); }
-        button:disabled { background: #555; cursor: not-allowed; transform: none; }
-        .btn-scan { background: #4ecca3; }
-        .btn-scan:hover { background: #3dbb94; }
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            font-size: 14px;
-            padding: 8px 16px;
-        }
-        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
-        .log {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            height: 350px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .log .success { color: #4ecca3; }
-        .log .error { color: #e94560; }
-        .log .info { color: #f0a500; }
-        .log .scan { color: #00d4ff; }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .stat {
-            text-align: center;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-        }
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #e94560;
-        }
-        .stat-label { color: #aaa; font-size: 12px; }
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #e94560, #ff6b6b);
-            border-radius: 4px;
-            transition: width 0.3s;
-            width: 0%;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .note {
-            color: #888;
-            font-size: 13px;
-            margin-top: 10px;
-            text-align: center;
-        }
-        .folder-tip {
-            background: rgba(78, 204, 163, 0.1);
-            border: 1px solid rgba(78, 204, 163, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            color: #4ecca3;
-            font-size: 14px;
-        }
-        .folder-tip strong { color: #fff; }
-        .ranges-found {
-            background: rgba(0, 212, 255, 0.05);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .ranges-found h3 {
-            color: #00d4ff;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        .range-item {
-            display: inline-block;
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 20px;
-            padding: 5px 15px;
-            margin: 3px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .range-item:hover {
-            background: rgba(0, 212, 255, 0.3);
-            transform: scale(1.05);
-        }
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .mode-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid rgba(255,255,255,0.1);
-            background: transparent;
-            color: #aaa;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .mode-btn.active {
-            border-color: #e94560;
-            color: #fff;
-            background: rgba(233, 69, 96, 0.1);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TodoTango Scraper</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0ece4;
+    --text2: #888;
+    --text3: #555;
+    --accent: #c9a84c;
+    --accent2: #8b5e3c;
+    --red: #9b2335;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text2);
+    font-family: 'Courier New', monospace;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .controls-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .controls-card h2 {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    margin-bottom: 1rem;
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  select, input[type="text"] {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 12px;
+    height: 38px;
+    outline: none;
+    font-family: 'Courier New', monospace;
+  }
+
+  select:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  select#selLetra { width: 90px; }
+  select#selGenero { width: 180px; }
+
+  button {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+
+  button:hover { background: var(--surface2); border-color: var(--text3); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  button.primary {
+    background: var(--accent);
+    color: #0d0d0d;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  button.primary:hover { opacity: 0.88; background: var(--accent); }
+
+  button.danger {
+    border-color: var(--red);
+    color: #f87171;
+  }
+
+  button.danger:hover { background: rgba(155,35,53,0.15); }
+
+  .progress-wrap {
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+    transition: width 0.3s ease;
+  }
+
+  .status {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    min-height: 16px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+
+  .stat-card .num {
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+    font-family: 'Georgia', serif;
+  }
+
+  .stat-card .lbl {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  .filter-row input { flex: 1; min-width: 200px; }
+
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 11px 14px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:hover td { background: var(--surface2); }
+
+  td a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  td a:hover { text-decoration: underline; }
+
+  .col-titulo { width: 30%; }
+  .col-genero { width: 14%; }
+  .col-anio   { width: 8%; }
+  .col-musica { width: 24%; }
+  .col-letra  { width: 24%; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .b-tango   { background: rgba(201,168,76,0.15); color: var(--accent); border: 1px solid rgba(201,168,76,0.3); }
+  .b-vals    { background: rgba(94,160,150,0.15); color: #5ea096; border: 1px solid rgba(94,160,150,0.3); }
+  .b-milonga { background: rgba(139,94,60,0.2); color: #c4895a; border: 1px solid rgba(139,94,60,0.3); }
+  .b-poema   { background: rgba(130,90,180,0.15); color: #b07fd6; border: 1px solid rgba(130,90,180,0.3); }
+  .b-other   { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    justify-content: center;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .empty .big { font-size: 40px; margin-bottom: 0.5rem; opacity: 0.3; }
+
+  .export-row {
+    display: none;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  .export-row .count {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text3);
+    margin-right: auto;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 600px) {
+    header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    main { padding: 1rem; }
+    .col-musica, .col-letra { display: none; }
+    .col-titulo { width: 50%; }
+    .col-genero { width: 28%; }
+    .col-anio   { width: 22%; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎵 TodoTango Downloader</h1>
-        <p class="subtitle">Descarga canciones de todotango.com</p>
 
-        <div class="folder-tip">
-            <strong>💡 Tip:</strong> Los navegadores guardan en "Descargas" por defecto. Para cambiarlo:<br>
-            • <strong>Chrome/Edge:</strong> Configuración → Descargas → Ubicación → Elegir "Biblioteca de Tango"<br>
-            • <strong>Firefox:</strong> Preferencias → Archivos y Aplicaciones → Descargas → Preguntar siempre<br>
-            • O simplemente mueve los archivos después de descargar
-        </div>
+<header>
+  <div class="logo-mark">♩</div>
+  <div>
+    <h1>TodoTango Scraper</h1>
+    <p>Extractor del catálogo · todotango.com</p>
+  </div>
+</header>
 
-        <div class="panel">
-            <div class="mode-selector">
-                <button class="mode-btn active" onclick="setMode('download')" id="modeDownload">⬇ Descargar</button>
-                <button class="mode-btn" onclick="setMode('scan')" id="modeScan">🔍 Escanear rangos</button>
-            </div>
+<main>
 
-            <div class="input-group">
-                <input type="number" id="startId" placeholder="ID inicial" value="2020" min="1">
-                <input type="number" id="endId" placeholder="ID final" value="2050" min="1">
-                <input type="text" id="folderName" placeholder="Nombre de carpeta (ej: Biblioteca de Tango)" value="Biblioteca de Tango">
-            </div>
+  <!-- Controles -->
+  <div class="controls-card">
+    <h2>Configuración de extracción</h2>
+    <div class="controls-row">
+      <select id="selLetra">
+        <option value="a">A</option><option value="b">B</option><option value="c">C</option>
+        <option value="d">D</option><option value="e">E</option><option value="f">F</option>
+        <option value="g">G</option><option value="h">H</option><option value="i">I</option>
+        <option value="j">J</option><option value="k">K</option><option value="l">L</option>
+        <option value="m">M</option><option value="n">N</option><option value="o">O</option>
+        <option value="p">P</option><option value="q">Q</option><option value="r">R</option>
+        <option value="s">S</option><option value="t">T</option><option value="u">U</option>
+        <option value="v">V</option><option value="w">W</option><option value="y">Y</option>
+        <option value="z">Z</option>
+        <option value="ALL">Todas A–Z</option>
+      </select>
 
-            <div class="controls">
-                <button onclick="startAction()" id="btnStart">▶ Iniciar</button>
-                <button class="btn-secondary" onclick="stopAction()" id="btnStop" disabled>⏹ Detener</button>
-                <button class="btn-secondary" onclick="clearLog()">🗑 Limpiar</button>
-                <button class="btn-secondary" onclick="exportList()">📋 Exportar URLs</button>
-                <button class="btn-secondary" onclick="exportRanges()">📊 Exportar rangos encontrados</button>
-            </div>
+      <select id="selGenero">
+        <option value="0">Todos los géneros</option>
+        <option value="7">Tango</option>
+        <option value="8">Vals</option>
+        <option value="4">Milonga</option>
+        <option value="6">Poema</option>
+        <option value="2">Folklore</option>
+        <option value="1">Canción</option>
+        <option value="5">Otros ritmos</option>
+        <option value="3">Foxtrot</option>
+      </select>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
-            </div>
-
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-number" id="statFound">0</div>
-                    <div class="stat-label">Encontradas</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number" id="statDownloaded">0</div>
-                    <div class="stat-label">Descargadas</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number" id="statFailed">0</div>
-                    <div class="stat-label">Vacíos/Error</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number" id="statProgress">0%</div>
-                    <div class="stat-label">Progreso</div>
-                </div>
-            </div>
-
-            <div class="ranges-found" id="rangesFound" style="display:none;">
-                <h3>🔍 Rangos con canciones encontrados:</h3>
-                <div id="rangesList"></div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="log" id="log"></div>
-            <p class="note">⚠️ El escaneo intenta descargar cada archivo y verifica el tamaño. Los archivos < 5KB se consideran vacíos.</p>
-        </div>
+      <button class="primary" id="btnScrape" onclick="startScrape()">▶ Extraer</button>
+      <button class="danger" id="btnStop" onclick="stopScrape()" style="display:none">■ Detener</button>
     </div>
 
-    <script>
-        const BASE_URL = 'https://sbits.us-sea-1.linodeobjects.com/todotango/ogg/';
-        let isRunning = false;
-        let foundSongs = [];
-        let validRanges = [];
-        let downloadedCount = 0;
-        let failedCount = 0;
-        let currentMode = 'download';
-        let folderName = 'Biblioteca de Tango';
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
 
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(mode === 'download' ? 'modeDownload' : 'modeScan').classList.add('active');
-            document.getElementById('btnStart').textContent = mode === 'download' ? '▶ Iniciar descarga' : '🔍 Escanear rangos';
-        }
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="num" id="sTot">0</div><div class="lbl">Total</div></div>
+    <div class="stat-card"><div class="num" id="sTan">0</div><div class="lbl">Tangos</div></div>
+    <div class="stat-card"><div class="num" id="sVal">0</div><div class="lbl">Vals</div></div>
+    <div class="stat-card"><div class="num" id="sMil">0</div><div class="lbl">Milongas</div></div>
+    <div class="stat-card"><div class="num" id="sOtr">0</div><div class="lbl">Otros</div></div>
+  </div>
 
-        function log(message, type = 'info') {
-            const logEl = document.getElementById('log');
-            const div = document.createElement('div');
-            div.className = type;
-            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logEl.appendChild(div);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
+  <!-- Filtros -->
+  <div class="filter-row" id="filterRow">
+    <input type="text" id="filterText" placeholder="Buscar título, músico o letrista..." oninput="renderTable()">
+    <select id="filterGenero" onchange="renderTable()">
+      <option value="">Todos los géneros</option>
+      <option value="tango">Tango</option>
+      <option value="vals">Vals</option>
+      <option value="milonga">Milonga</option>
+      <option value="poema">Poema</option>
+      <option value="canción">Canción</option>
+      <option value="folklore">Folklore</option>
+      <option value="foxtrot">Foxtrot</option>
+    </select>
+    <select id="sortBy" onchange="renderTable()">
+      <option value="titulo">Título A–Z</option>
+      <option value="anio">Año</option>
+      <option value="genero">Género</option>
+    </select>
+  </div>
 
-        function updateStats() {
-            document.getElementById('statFound').textContent = foundSongs.length;
-            document.getElementById('statDownloaded').textContent = downloadedCount;
-            document.getElementById('statFailed').textContent = failedCount;
-        }
+  <!-- Tabla -->
+  <div class="table-card" id="tableCard">
+    <div class="empty" id="emptyMsg">
+      <div class="big">♬</div>
+      Seleccioná una letra y hacé clic en <strong>Extraer</strong>
+    </div>
+    <div class="table-wrap" id="tableWrap" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-titulo">Título</th>
+            <th class="col-genero">Género</th>
+            <th class="col-anio">Año</th>
+            <th class="col-musica">Música</th>
+            <th class="col-letra">Letra</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pagination" id="pagination" style="display:none">
+        <button onclick="changePage(-1)">← Anterior</button>
+        <span id="pageInfo"></span>
+        <button onclick="changePage(1)">Siguiente →</button>
+      </div>
+    </div>
+  </div>
 
-        function updateProgress(current, total) {
-            const pct = total > 0 ? Math.round((current / total) * 100) : 0;
-            document.getElementById('progressBar').style.width = pct + '%';
-            document.getElementById('statProgress').textContent = pct + '%';
-        }
+  <!-- Exportar -->
+  <div class="export-row" id="exportRow">
+    <span class="count" id="exportCount"></span>
+    <button onclick="exportCSV()">↓ CSV (Excel)</button>
+    <button onclick="exportJSON()">↓ JSON</button>
+  </div>
 
-        function addRange(start, end, count) {
-            validRanges.push({ start, end, count });
-            updateRangesDisplay();
-        }
+</main>
 
-        function updateRangesDisplay() {
-            const container = document.getElementById('rangesFound');
-            const list = document.getElementById('rangesList');
-            
-            if (validRanges.length > 0) {
-                container.style.display = 'block';
-                list.innerHTML = validRanges.map(r => 
-                    `<span class="range-item" onclick="setRange(${r.start}, ${r.end})" title="Click para usar este rango">
-                        ${r.start}-${r.end} (${r.count} canciones)
-                    </span>`
-                ).join('');
-            }
-        }
+<footer>
+  scraper no oficial · datos © todotango.com · uso personal
+</footer>
 
-        function setRange(start, end) {
-            document.getElementById('startId').value = start;
-            document.getElementById('endId').value = end;
-            log(`Rango seleccionado: ${start} - ${end}`, 'info');
-        }
+<script>
+let allData = [];
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let running = false;
+let abortFlag = false;
 
-        async function checkFileSize(url) {
-            try {
-                const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-                // Con no-cors no podemos leer headers, así que usamos otro método
-                return null;
-            } catch (e) {
-                return null;
-            }
-        }
+const PROXY = 'https://api.allorigins.win/get?url=';
+const GENRE_MAP = { '0':'todos','1':'Canci%c3%b3n','2':'Folklore','3':'Foxtrot','4':'Milonga','5':'Otros%20ritmos','6':'Poema','7':'Tango','8':'Vals' };
 
-        async function tryDownloadAndCheck(id) {
-            return new Promise((resolve) => {
-                const url = `${BASE_URL}${id}.ogg`;
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                xhr.responseType = 'blob';
-                xhr.timeout = 15000;
-                
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        const size = xhr.response.size;
-                        if (size > 5000) { // Más de 5KB = canción real
-                            resolve({ exists: true, size: size, blob: xhr.response });
-                        } else {
-                            resolve({ exists: false, size: size, reason: 'archivo vacío' });
-                        }
-                    } else {
-                        resolve({ exists: false, size: 0, reason: `HTTP ${xhr.status}` });
-                    }
-                };
-                
-                xhr.onerror = () => resolve({ exists: false, reason: 'error de red' });
-                xhr.ontimeout = () => resolve({ exists: false, reason: 'timeout' });
-                xhr.onabort = () => resolve({ exists: false, reason: 'abortado' });
-                
-                xhr.send();
-            });
-        }
+function badgeClass(g) {
+  if (!g) return 'b-other';
+  const l = g.toLowerCase();
+  if (l.includes('tango'))   return 'b-tango';
+  if (l.includes('vals'))    return 'b-vals';
+  if (l.includes('milonga')) return 'b-milonga';
+  if (l.includes('poema'))   return 'b-poema';
+  return 'b-other';
+}
 
-        async function downloadBlob(id, blob, folder) {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            // Nombre con prefijo de carpeta para organización
-            link.download = `${folder.replace(/[^a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]/g, '_')}_${id}.ogg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        }
+function setStatus(msg)  { document.getElementById('status').textContent = msg; }
+function setProgress(p)  { document.getElementById('progressFill').style.width = p + '%'; }
 
-        async function startAction() {
-            if (isRunning) return;
-            
-            const startId = parseInt(document.getElementById('startId').value) || 1;
-            const endId = parseInt(document.getElementById('endId').value) || startId;
-            folderName = document.getElementById('folderName').value || 'Biblioteca de Tango';
-            
-            if (startId > endId) {
-                log('Error: El ID inicial debe ser menor o igual al final', 'error');
-                return;
-            }
+async function fetchLetter(letter, generoId) {
+  const genStr = GENRE_MAP[generoId] || 'todos';
+  const targetUrl = `https://www.todotango.com/musica/obras/letras/${letter}/0/${genStr}/`;
+  let html = '';
+  try {
+    const r  = await fetch(PROXY + encodeURIComponent(targetUrl));
+    const d  = await r.json();
+    html = d.contents || '';
+  } catch(e) { return []; }
 
-            isRunning = true;
-            foundSongs = [];
-            downloadedCount = 0;
-            failedCount = 0;
-            
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled = false;
-            
-            const isScanMode = currentMode === 'scan';
-            log(`${isScanMode ? '🔍 Escaneando' : '⬇ Descargando'} IDs ${startId} a ${endId}...`, 'info');
-            
-            const total = endId - startId + 1;
-            let currentRangeStart = null;
-            let currentRangeCount = 0;
-            
-            for (let id = startId; id <= endId && isRunning; id++) {
-                updateProgress(id - startId + 1, total);
-                
-                try {
-                    const result = await tryDownloadAndCheck(id);
-                    
-                    if (result.exists) {
-                        foundSongs.push(id);
-                        
-                        // Manejar rangos en modo escaneo
-                        if (isScanMode) {
-                            if (currentRangeStart === null) {
-                                currentRangeStart = id;
-                            }
-                            currentRangeCount++;
-                            log(`🔍 ID ${id}: Encontrada (${(result.size/1024).toFixed(1)} KB)`, 'scan');
-                        } else {
-                            // Modo descarga
-                            await downloadBlob(id, result.blob, folderName);
-                            downloadedCount++;
-                            log(`✓ ID ${id}: Descargada (${(result.size/1024).toFixed(1)} KB) → "${folderName}_${id}.ogg"`, 'success');
-                        }
-                    } else {
-                        failedCount++;
-                        
-                        // Si estábamos en un rango válido, cerrarlo
-                        if (isScanMode && currentRangeStart !== null) {
-                            addRange(currentRangeStart, id - 1, currentRangeCount);
-                            currentRangeStart = null;
-                            currentRangeCount = 0;
-                        }
-                        
-                        log(`✗ ID ${id}: ${result.reason}`, 'error');
-                    }
-                } catch (e) {
-                    failedCount++;
-                    log(`✗ ID ${id}: Error - ${e.message}`, 'error');
-                }
-                
-                updateStats();
-                
-                // Pausa entre peticiones
-                if (isRunning && id < endId) {
-                    await new Promise(r => setTimeout(r, 800));
-                }
-            }
-            
-            // Cerrar rango pendiente al finalizar
-            if (isScanMode && currentRangeStart !== null) {
-                addRange(currentRangeStart, endId, currentRangeCount);
-            }
-            
-            isRunning = false;
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
-            
-            if (isScanMode) {
-                log(`🔍 Escaneo completado! ${foundSongs.length} canciones encontradas en ${validRanges.length} rango(s).`, 'info');
-            } else {
-                log(`¡Descarga completada! ${downloadedCount} canciones descargadas, ${failedCount} fallidas.`, 'info');
-            }
-        }
+  const items = [];
 
-        function stopAction() {
-            isRunning = false;
-            log('Proceso detenido por el usuario.', 'info');
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
-        }
+  // Patrón principal: title="Nombre (Género)"
+  const re1 = /href="(https:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/[^"]+\/)"[^>]*title="([^"]+)\(([^)]+)\)"/g;
+  let m;
+  while ((m = re1.exec(html)) !== null) {
+    const id = parseInt(m[2]);
+    if (!items.find(x => x.id === id))
+      items.push({ id, titulo: m[3].trim(), genero: m[4].trim(), url: m[1], musica:'', letra:'', anio:'' });
+  }
 
-        function clearLog() {
-            document.getElementById('log').innerHTML = '';
-            validRanges = [];
-            document.getElementById('rangesFound').style.display = 'none';
-        }
+  // Fallback
+  if (items.length === 0) {
+    const re2 = /href="(https:\/\/www\.todotango\.com\/musica\/tema\/(\d+)\/([^"]+)\/)"[^>]*>([^<]+)<\/a>\s*\(([^)]+)\)/g;
+    while ((m = re2.exec(html)) !== null) {
+      const id = parseInt(m[2]);
+      if (!items.find(x => x.id === id))
+        items.push({ id, titulo: m[4].trim(), genero: m[5].trim(), url: m[1], musica:'', letra:'', anio:'' });
+    }
+  }
 
-        function exportList() {
-            if (foundSongs.length === 0) {
-                log('No hay canciones para exportar.', 'error');
-                return;
-            }
-            
-            const content = foundSongs.map(id => `${BASE_URL}${id}.ogg`).join('\\n');
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'todotango_urls.txt';
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            log(`Lista exportada: ${foundSongs.length} URLs`, 'success');
-        }
+  return items;
+}
 
-        function exportRanges() {
-            if (validRanges.length === 0) {
-                log('No hay rangos para exportar.', 'error');
-                return;
-            }
-            
-            const content = validRanges.map(r => `IDs ${r.start}-${r.end}: ${r.count} canciones`).join('\\n');
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'todotango_rangos.txt';
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            log(`Rangos exportados: ${validRanges.length}`, 'success');
-        }
-    </script>
+async function enrichItem(item) {
+  try {
+    const r   = await fetch(PROXY + encodeURIComponent(item.url));
+    const d   = await r.json();
+    const html = d.contents || '';
+
+    const ym = html.match(/(?:Tango|Vals|Milonga|Canción|Foxtrot|Poema|Folklore)[^<]*(\d{4})/)
+            || html.match(/<h4[^>]*>[^<]*(\d{4})[^<]*<\/h4>/);
+    if (ym) item.anio = ym[1];
+
+    const mm = html.match(/Música:[^<]*<a[^>]+>([^<]+)<\/a>/);
+    if (mm) item.musica = mm[1].trim();
+
+    const lm = html.match(/Letra:[^<]*<a[^>]+>([^<]+)<\/a>/);
+    if (lm) item.letra = lm[1].trim();
+  } catch(e) {}
+}
+
+async function startScrape() {
+  if (running) return;
+  running = true; abortFlag = false;
+  allData = []; currentPage = 1;
+
+  document.getElementById('btnScrape').disabled = true;
+  document.getElementById('btnStop').style.display = '';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('statsGrid').style.display = 'none';
+  document.getElementById('filterRow').style.display = 'none';
+  document.getElementById('exportRow').style.display = 'none';
+  document.getElementById('tableWrap').style.display = 'none';
+  document.getElementById('emptyMsg').style.display = '';
+  document.getElementById('emptyMsg').innerHTML = '<div class="big">♩</div>Extrayendo...';
+
+  const letraVal  = document.getElementById('selLetra').value;
+  const generoId  = document.getElementById('selGenero').value;
+  const ALPHABET  = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','y','z'];
+  const letters   = letraVal === 'ALL' ? ALPHABET : [letraVal];
+
+  setProgress(0);
+
+  for (let li = 0; li < letters.length; li++) {
+    if (abortFlag) break;
+    const l = letters[li];
+    setStatus(`Leyendo letra "${l.toUpperCase()}"… (${li + 1}/${letters.length})`);
+    const items = await fetchLetter(l, generoId);
+    allData.push(...items);
+    updateStats();
+    setProgress(Math.round((li + 1) / letters.length * 70));
+    renderTable();
+    if (letters.length > 1) await sleep(600);
+  }
+
+  document.getElementById('statsGrid').style.display = 'grid';
+  document.getElementById('filterRow').style.display = 'flex';
+  document.getElementById('exportRow').style.display = 'flex';
+  document.getElementById('tableWrap').style.display = '';
+  document.getElementById('emptyMsg').style.display = 'none';
+
+  setStatus(`${allData.length} temas encontrados. Enriqueciendo con detalles…`);
+  setProgress(70);
+
+  // Enriquecer primeros 30 con año/músico/letrista
+  const toEnrich = allData.filter(x => !x.anio).slice(0, 30);
+  for (let i = 0; i < toEnrich.length; i++) {
+    if (abortFlag) break;
+    await enrichItem(toEnrich[i]);
+    setProgress(70 + Math.round((i + 1) / toEnrich.length * 28));
+    if (i % 5 === 0) renderTable();
+    await sleep(250);
+  }
+
+  renderTable();
+  updateStats();
+  setProgress(100);
+  setStatus(`✓ Listo: ${allData.length} temas. Podés filtrar y exportar.`);
+
+  document.getElementById('btnScrape').disabled = false;
+  document.getElementById('btnStop').style.display = 'none';
+  running = false;
+}
+
+function stopScrape() {
+  abortFlag = true;
+  setStatus('Deteniendo…');
+  document.getElementById('btnStop').style.display = 'none';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function updateStats() {
+  const t = allData.length;
+  const tang = allData.filter(x => x.genero && x.genero.toLowerCase().includes('tango')).length;
+  const vals = allData.filter(x => x.genero && x.genero.toLowerCase().includes('vals')).length;
+  const mil  = allData.filter(x => x.genero && x.genero.toLowerCase().includes('milonga')).length;
+  const otros = t - tang - vals - mil;
+  document.getElementById('sTot').textContent = t;
+  document.getElementById('sTan').textContent = tang;
+  document.getElementById('sVal').textContent = vals;
+  document.getElementById('sMil').textContent = mil;
+  document.getElementById('sOtr').textContent = Math.max(0, otros);
+}
+
+function getFiltered() {
+  const txt  = (document.getElementById('filterText').value || '').toLowerCase();
+  const gen  = (document.getElementById('filterGenero').value || '').toLowerCase();
+  const sort = document.getElementById('sortBy').value;
+
+  let data = allData.filter(x => {
+    const mt = !txt || x.titulo.toLowerCase().includes(txt) || (x.musica||'').toLowerCase().includes(txt) || (x.letra||'').toLowerCase().includes(txt);
+    const mg = !gen || (x.genero||'').toLowerCase().includes(gen);
+    return mt && mg;
+  });
+
+  data.sort((a, b) => {
+    if (sort === 'titulo') return a.titulo.localeCompare(b.titulo, 'es');
+    if (sort === 'anio')   return (parseInt(a.anio)||9999) - (parseInt(b.anio)||9999);
+    if (sort === 'genero') return (a.genero||'').localeCompare(b.genero||'', 'es');
+    return 0;
+  });
+  return data;
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  const total    = filtered.length;
+  const pages    = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > pages) currentPage = 1;
+
+  const slice = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  document.getElementById('tbody').innerHTML = slice.map(x => `
+    <tr>
+      <td title="${esc(x.titulo)}"><a href="${x.url}" target="_blank">${esc(x.titulo)}</a></td>
+      <td><span class="badge ${badgeClass(x.genero)}">${esc(x.genero||'—')}</span></td>
+      <td>${x.anio || '—'}</td>
+      <td title="${esc(x.musica)}">${esc(x.musica||'—')}</td>
+      <td title="${esc(x.letra)}">${esc(x.letra||'—')}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pageInfo').textContent = `Pág. ${currentPage} / ${pages}  (${total} resultados)`;
+  document.getElementById('pagination').style.display = total > PAGE_SIZE ? 'flex' : 'none';
+  document.getElementById('exportCount').textContent = `${total} temas listos para exportar`;
+}
+
+function changePage(dir) {
+  const pages = Math.ceil(getFiltered().length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(pages, currentPage + dir));
+  renderTable();
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function exportCSV() {
+  const data = getFiltered();
+  const rows = [['ID','Título','Género','Año','Música','Letra','URL']];
+  data.forEach(x => rows.push([x.id, x.titulo, x.genero, x.anio, x.musica, x.letra, x.url]));
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  download(csv, 'todotango.csv', 'text/csv;charset=utf-8;');
+}
+
+function exportJSON() {
+  download(JSON.stringify(getFiltered(), null, 2), 'todotango.json', 'application/json');
+}
+
+function download(content, filename, mime) {
+  const a   = document.createElement('a');
+  a.href    = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  a.click();
+}
+</script>
 </body>
 </html>
-
-
-
-print("Archivo guardado: /mnt/agents/output/index.html")
-print(f"Tamaño: {len(html_content)} caracteres")

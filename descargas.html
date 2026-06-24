@@ -480,7 +480,8 @@ const PAGE_SIZE = 50;
 let running = false;
 let abortFlag = false;
 
-const PROXY = 'https://api.allorigins.win/get?url=';
+// Proxy propio en Google Apps Script (reemplaza al CORS proxy público)
+const PROXY = 'https://script.google.com/macros/s/AKfycbxIsEvw08ZJK92yiBZhOf0U4MlwdbH7ujlzl73fSnrRuCDeUFbDFvUbhCmAVZ-kmte5/exec?url=';
 const GENRE_MAP = { '0':'todos','1':'Canci%c3%b3n','2':'Folklore','3':'Foxtrot','4':'Milonga','5':'Otros%20ritmos','6':'Poema','7':'Tango','8':'Vals' };
 
 function badgeClass(g) {
